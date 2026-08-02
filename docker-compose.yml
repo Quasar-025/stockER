@@ -1,0 +1,127 @@
+# ============================================================
+# StockER — Full Local Development Stack
+# ============================================================
+# Usage: docker compose up -d
+# This starts all infrastructure services.
+# Backend and frontend run on the host for hot-reload during dev.
+
+services:
+  # ----------------------------------------------------------
+  # PostgreSQL + TimescaleDB (Time-series + Relational)
+  # ----------------------------------------------------------
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: stocker-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: stocker
+      POSTGRES_USER: stocker
+      POSTGRES_PASSWORD: stocker_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stocker -d stocker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------
+  # Redis (Cache + Celery Broker + Rate Limiting)
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: stocker-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------
+  # Qdrant (Vector Database — Event Embeddings)
+  # ----------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: stocker-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+
+  # ----------------------------------------------------------
+  # Neo4j (Knowledge Graph — Causal Event Graph)
+  # ----------------------------------------------------------
+  neo4j:
+    image: neo4j:5-community
+    container_name: stocker-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # Browser UI
+      - "7687:7687"   # Bolt protocol
+    environment:
+      NEO4J_AUTH: neo4j/stocker_dev
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ----------------------------------------------------------
+  # Redpanda (Event Streaming — Kafka-compatible, no JVM)
+  # ----------------------------------------------------------
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: stocker-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+    ports:
+      - "19092:19092"  # Kafka API (external)
+      - "18081:18081"  # Schema Registry (external)
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+
+  # ----------------------------------------------------------
+  # Redpanda Console (Optional — Web UI for Redpanda)
+  # ----------------------------------------------------------
+  redpanda-console:
+    image: redpandadata/console:latest
+    container_name: stocker-redpanda-console
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      SCHEMA_REGISTRY_URL: http://redpanda:8081
+    depends_on:
+      - redpanda
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  neo4j_data:
+  neo4j_logs:
+  redpanda_data:
