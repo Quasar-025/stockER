@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def run_async(coro: Any) -> Any:
     """Helper to run async functions synchronously in Celery tasks."""
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 @celery_app.task(bind=True, name="app.tasks.fetch_latest_sec_filings")
