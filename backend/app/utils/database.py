@@ -7,7 +7,7 @@ from app.config import settings
 
 # Async engine for FastAPI
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.database_url,
     echo=settings.is_development,
     pool_size=20,
     max_overflow=10,

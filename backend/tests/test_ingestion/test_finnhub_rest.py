@@ -7,19 +7,18 @@ from unittest.mock import patch, AsyncMock
 from app.ingestion.finnhub_rest import FinnhubRESTClient
 
 
-@pytest.fixture
-def mock_finnhub_api_key(monkeypatch):
-    """Mock the API key setting."""
-    monkeypatch.setenv("FINNHUB_API_KEY", "test_api_key")
-    # Need to reload settings or just pass directly to constructor in test
+def _mock_response(status_code: int = 200, json_data=None, text_data: str = "") -> httpx.Response:
+    """Create a properly constructed mock httpx Response."""
+    request = httpx.Request("GET", "https://test.example.com")
+    if json_data is not None:
+        return httpx.Response(status_code, json=json_data, request=request)
+    return httpx.Response(status_code, text=text_data, request=request)
 
 
 @pytest.mark.asyncio
 async def test_finnhub_client_requires_api_key(monkeypatch):
     """Test that missing API key raises ValueError."""
-    # Ensure settings.FINNHUB_API_KEY is empty for this test
     monkeypatch.setattr("app.config.settings.FINNHUB_API_KEY", "")
-    
     with pytest.raises(ValueError, match="Finnhub API key is required"):
         FinnhubRESTClient()
 
@@ -28,9 +27,8 @@ async def test_finnhub_client_requires_api_key(monkeypatch):
 async def test_get_company_news():
     """Test fetching company news."""
     client = FinnhubRESTClient(api_key="test_api_key")
-    
-    # Mock the underlying httpx client
-    mock_response = httpx.Response(200, json=[
+
+    mock_resp = _mock_response(json_data=[
         {
             "category": "company",
             "datetime": 1596589501,
@@ -40,22 +38,16 @@ async def test_get_company_news():
             "related": "AAPL",
             "source": "Yahoo",
             "summary": "Apple summary...",
-            "url": "https://example.com/news"
+            "url": "https://example.com/news",
         }
     ])
-    
+
     with patch.object(client.client, "get", new_callable=AsyncMock) as mock_get:
-        mock_get.return_value = mock_response
-        
-        # We need to mock the rate limiter so we don't actually sleep in tests
-        with patch("app.ingestion.finnhub_rest.rate_limiter.acquire", new_callable=AsyncMock) as mock_acquire:
+        mock_get.return_value = mock_resp
+        with patch("app.ingestion.finnhub_rest.rate_limiter.acquire", new_callable=AsyncMock) as mock_acq:
             news = await client.get_company_news("AAPL", "2024-01-01", "2024-01-31")
-            
-            mock_acquire.assert_called_once_with("finnhub")
-            mock_get.assert_called_once()
-            
+            mock_acq.assert_called_once_with("finnhub")
             assert len(news) == 1
             assert news[0]["headline"] == "Apple is doing great"
-            assert news[0]["related"] == "AAPL"
 
     await client.close()

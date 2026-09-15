@@ -19,7 +19,7 @@ class SecEdgarClient:
     
     BASE_RSS_URL = "https://www.sec.gov/cgi-bin/browse-edgar"
     
-    def __init__(self, user_agent: str = "StockER/0.1.0 (info@stocker.dev)") -> None:
+    def __init__(self, user_agent: str = "StockER/0.1.0 (kanodiakaustubh@gmail.com)") -> None:
         """Initialize the client."""
         self.user_agent = user_agent
         self.client = httpx.AsyncClient(
