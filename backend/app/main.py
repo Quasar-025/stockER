@@ -19,20 +19,36 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"LLM Provider: Ollama @ {settings.OLLAMA_HOST}")
 
-    # TODO: Initialize database connections
-    # TODO: Initialize Qdrant client
-    # TODO: Initialize Neo4j client
-    # TODO: Initialize Redpanda consumers
-    # TODO: Start background ingestion tasks
+    # Initialize Vector DB (Qdrant)
+    try:
+        from app.vectors.store import QdrantEventStore
+        qdrant = QdrantEventStore()
+        await qdrant.ensure_collection()
+        logger.info("Qdrant events collection ready")
+    except Exception as e:
+        logger.warning(f"Qdrant initialization failed (non-fatal): {e}")
+
+    # Initialize Graph DB (Neo4j)
+    neo4j = None
+    try:
+        from app.graph.client import Neo4jGraphClient
+        neo4j = Neo4jGraphClient()
+        await neo4j.connect()
+        app.state.neo4j_client = neo4j
+        logger.info("Neo4j connection ready")
+    except Exception as e:
+        logger.warning(f"Neo4j initialization failed (non-fatal): {e}")
+
+    # Start Finnhub WebSocket for real-time events
+    # ws_client = FinnhubWebSocketClient()
+    # ws_task = asyncio.create_task(ws_client.start())
 
     yield
 
-    # Shutdown
-    logger.info("StockER shutting down...")
-    # TODO: Close database connections
-    # TODO: Close Qdrant client
-    # TODO: Close Neo4j client
-    # TODO: Stop Redpanda consumers
+    # Shutdown logic
+    logger.info("Shutting down StockER API...")
+    if neo4j:
+        await neo4j.close()
 
 
 def create_app() -> FastAPI:
@@ -80,13 +96,14 @@ def create_app() -> FastAPI:
             "docs": "/docs",
         }
 
-    # TODO: Include routers
-    # app.include_router(stocks_router, prefix="/api/stocks", tags=["Stocks"])
-    # app.include_router(events_router, prefix="/api/events", tags=["Events"])
-    # app.include_router(predictions_router, prefix="/api/predict", tags=["Predictions"])
-    # app.include_router(portfolio_router, prefix="/api/portfolio", tags=["Portfolio"])
-    # app.include_router(evaluation_router, prefix="/api/evaluation", tags=["Evaluation"])
-    # app.include_router(ws_router, prefix="/ws", tags=["WebSocket"])
+    # Register routers
+    from app.routers import health, events, forecast, stocks, graph
+
+    app.include_router(health.router)
+    app.include_router(events.router)
+    app.include_router(forecast.router)
+    app.include_router(stocks.router)
+    app.include_router(graph.router)
 
     return app
 

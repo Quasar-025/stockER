@@ -34,7 +34,7 @@ class TestSimilarityWeights:
 
     def test_default_weights_sum_to_one(self):
         w = SimilarityWeights()
-        total = w.semantic + w.sector + w.geographic + w.regime + w.volatility
+        total = sum(w.__dict__.values())
         assert abs(total - 1.0) < 0.01
 
     def test_invalid_weights_raise_error(self):

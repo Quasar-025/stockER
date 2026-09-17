@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from app.intelligence.ontology import EventOntologySchema
 from app.intelligence.similarity import SimilarityBreakdown
 from app.intelligence.regime import MarketRegime
+from app.intelligence.distribution import EmpiricalImpactDistribution
+from app.intelligence.effect_decomposition import ReliabilityCalibrator, ReliabilityInputs
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,16 @@ class ForecastResult:
     similar_events: list[dict]   # List of similar event summaries
     causal_chain: list[str]      # Causal propagation path
     created_at: datetime
+    # V2 fields remain distinct: likelihood is not reliability.
+    direction_probability: float = 0.0
+    model_confidence: float = 0.0
+    confidence_is_calibrated: bool = False
+    sample_count: int = 0
+    return_p25: float = 0.0
+    return_p50: float = 0.0
+    return_p75: float = 0.0
+    insufficient_historical_evidence: bool = True
+    company_name: str | None = None
 
 
 class MarketImpactEngine:
@@ -41,10 +53,16 @@ class MarketImpactEngine:
     similarity score, to produce an expected market impact.
     """
 
-    def __init__(self, min_confidence: float = 0.3, default_horizon_days: int = 30) -> None:
+    def __init__(
+        self,
+        min_confidence: float = 0.3,
+        default_horizon_days: int = 30,
+        reliability_calibrator: ReliabilityCalibrator | None = None,
+    ) -> None:
         """Initialize with minimum confidence threshold."""
         self.min_confidence = min_confidence
         self.default_horizon_days = default_horizon_days
+        self.reliability_calibrator = reliability_calibrator or ReliabilityCalibrator()
 
     def compute_forecast(
         self,
@@ -77,6 +95,11 @@ class MarketImpactEngine:
                 similar_events=[],
                 causal_chain=causal_chain or [],
                 created_at=datetime.now(timezone.utc),
+                direction_probability=0.0,
+                model_confidence=0.0,
+                confidence_is_calibrated=False,
+                sample_count=0,
+                insufficient_historical_evidence=True,
             )
 
         # Weighted average of historical impacts
@@ -103,10 +126,24 @@ class MarketImpactEngine:
         else:
             predicted_impact = 0.0
 
-        # Confidence = average similarity * coverage factor
+        # Similarity and count provide inputs to a reliability calibration, not
+        # a multiplication that can be misrepresented as a probability.
         avg_similarity = total_weight / len(similar_events) if similar_events else 0
-        coverage = min(len(similar_events) / 5, 1.0)  # More events = higher confidence
-        confidence = avg_similarity * coverage
+        impact_distribution = EmpiricalImpactDistribution.from_returns(
+            [impact for _, _, impact in similar_events]
+        )
+        uncertainty = min(1.0, (impact_distribution.standard_error or 0.05) / 0.05)
+        reliability = self.reliability_calibrator.estimate(ReliabilityInputs(
+            sample_count=len(similar_events), consistency=impact_distribution.historical_consistency,
+            similarity_quality=avg_similarity, data_quality=1.0, edge_confidence=1.0,
+            model_uncertainty=uncertainty,
+        ))
+        direction_probability = max(
+            impact_distribution.probability_negative,
+            impact_distribution.probability_positive,
+            impact_distribution.probability_neutral,
+        )
+        confidence = reliability.value
 
         return ForecastResult(
             event_id=uuid.uuid4(),
@@ -118,4 +155,27 @@ class MarketImpactEngine:
             similar_events=event_summaries,
             causal_chain=causal_chain or [],
             created_at=datetime.now(timezone.utc),
+            direction_probability=round(direction_probability, 4),
+            model_confidence=round(confidence, 4),
+            confidence_is_calibrated=reliability.is_calibrated,
+            sample_count=len(similar_events),
+            return_p25=impact_distribution.quantiles.p25,
+            return_p50=impact_distribution.quantiles.p50,
+            return_p75=impact_distribution.quantiles.p75,
+            insufficient_historical_evidence=(
+                len(similar_events) <= 5
+                or not reliability.is_calibrated
+                or confidence < self.min_confidence
+            ),
         )
+
+    def compute_probabilistic_forecast(self, *args, **kwargs):
+        """Delegate multi-entity causal forecasting to ``PropagationEngine``.
+
+        The explicit engine parameter avoids creating graph/database clients
+        behind the caller's back and preserves this legacy API for existing
+        single-ticker workflows.
+        """
+
+        propagation_engine = kwargs.pop("propagation_engine")
+        return propagation_engine.forecast(*args, **kwargs)
