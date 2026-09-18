@@ -107,7 +107,11 @@ class CausalEdge(BaseModel):
         expected_channel = CHANNEL_FOR_RELATIONSHIP[self.relationship_type]
         if self.channel_type != expected_channel:
             raise ValueError("Relationship type must map to its propagation channel")
-        if self.min_lag_days is not None and self.max_lag_days is not None and self.min_lag_days > self.max_lag_days:
+        if (
+            self.min_lag_days is not None
+            and self.max_lag_days is not None
+            and self.min_lag_days > self.max_lag_days
+        ):
             raise ValueError("min_lag_days cannot exceed max_lag_days")
         if self.historical_coefficient is None and not self.estimation_metadata.is_prior:
             raise ValueError("Data-estimated edges require a historical coefficient")
@@ -135,7 +139,9 @@ class CausalEdge(BaseModel):
         if self.source_date is not None and self.source_date > as_of:
             return False
         if not self.temporal_approximation:
-            return self.relationship_verified_at is not None and self.relationship_verified_at <= as_of
+            return (
+                self.relationship_verified_at is not None and self.relationship_verified_at <= as_of
+            )
         return True
 
 

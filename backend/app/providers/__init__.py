@@ -68,7 +68,9 @@ class SupplyChainDataProvider(ABC):
         """Return evidence records that may support graph-edge review."""
 
 
-def _quality(source: str, *, completeness: float, timestamp: datetime | None = None) -> DataQualityRecord:
+def _quality(
+    source: str, *, completeness: float, timestamp: datetime | None = None
+) -> DataQualityRecord:
     return DataQualityRecord.from_source(
         source=source,
         source_timestamp=timestamp,

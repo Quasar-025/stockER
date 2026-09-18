@@ -12,6 +12,7 @@ from app.utils.database import Base
 
 class EventObject(Base):
     """Structured event ontology extracted from news/filings."""
+
     __tablename__ = "events"
 
     # Use native UUID
@@ -29,11 +30,17 @@ class EventObject(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
     source_url: Mapped[str] = mapped_column(String(1000), nullable=False, unique=True)
-    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
-    event_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    published_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    event_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     # Extracted metadata (Classification & Ontology)
-    category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)  # e.g., "SUPPLY_CHAIN_DISRUPTION"
+    category: Mapped[str] = mapped_column(
+        String(100), nullable=False, index=True
+    )  # e.g., "SUPPLY_CHAIN_DISRUPTION"
     subcategory: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     severity_score: Mapped[float] = mapped_column(Float, nullable=False)  # 0.0 to 1.0
     estimated_disruption_magnitude: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -48,7 +55,9 @@ class EventObject(Base):
 
     # Provenance is needed for point-in-time historical evaluation.
     data_source: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    source_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_timestamp: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     ingested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Link to Qdrant vector embedding (same UUID)

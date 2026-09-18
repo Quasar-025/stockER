@@ -80,14 +80,16 @@ async def traverse_graph(ticker: str, max_depth: int = 3):
         # Format paths for the frontend
         formatted_paths = []
         for r in results:
-            formatted_paths.append({
-                "path": " → ".join(r["path_tickers"]),
-                "nodes": r["path_tickers"],
-                "relationships": r["relationship_types"],
-                "channels": r["channel_types"],
-                "depth": r["depth"],
-                "cumulative_lag_days": r["cumulative_lag"],
-            })
+            formatted_paths.append(
+                {
+                    "path": " → ".join(r["path_tickers"]),
+                    "nodes": r["path_tickers"],
+                    "relationships": r["relationship_types"],
+                    "channels": r["channel_types"],
+                    "depth": r["depth"],
+                    "cumulative_lag_days": r["cumulative_lag"],
+                }
+            )
 
         return {
             "source_ticker": ticker,

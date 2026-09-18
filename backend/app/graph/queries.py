@@ -27,7 +27,8 @@ def filter_edges_point_in_time(
     """Filter graph state to what was knowable at the backtest date."""
 
     return [
-        edge for edge in edges
+        edge
+        for edge in edges
         if edge.available_at(as_of, allow_temporal_approximation=allow_temporal_approximation)
     ]
 
@@ -87,17 +88,29 @@ class InMemoryCausalGraph:
         return paths
 
     def coverage(self, entities: list[str]) -> GraphCoverageSummary:
-        relevant = [edge for edge in self.edges if edge.source_entity in entities or edge.target_entity in entities]
-        covered = sorted({entity for edge in relevant for entity in (edge.source_entity, edge.target_entity)} & set(entities))
+        relevant = [
+            edge
+            for edge in self.edges
+            if edge.source_entity in entities or edge.target_entity in entities
+        ]
+        covered = sorted(
+            {entity for edge in relevant for entity in (edge.source_entity, edge.target_entity)}
+            & set(entities)
+        )
         causal = [edge for edge in relevant if edge.participates_in_causal_propagation]
         contextual = [edge for edge in relevant if not edge.participates_in_causal_propagation]
         missing = sorted(set(entities) - set(covered))
         limitations = [f"No graph coverage for {entity}" for entity in missing]
         if any(edge.temporal_approximation for edge in relevant):
-            limitations.append("Some graph edges are temporal approximations and are excluded from rigorous PIT tests.")
+            limitations.append(
+                "Some graph edges are temporal approximations and are excluded from rigorous PIT tests."
+            )
         return GraphCoverageSummary(
-            entities_requested=entities, entities_with_edges=covered,
+            entities_requested=entities,
+            entities_with_edges=covered,
             covered_entity_ratio=len(covered) / len(entities) if entities else 1.0,
-            causal_edge_count=len(causal), contextual_edge_count=len(contextual),
-            approximate_edge_count=sum(edge.temporal_approximation for edge in relevant), limitations=limitations,
+            causal_edge_count=len(causal),
+            contextual_edge_count=len(contextual),
+            approximate_edge_count=sum(edge.temporal_approximation for edge in relevant),
+            limitations=limitations,
         )

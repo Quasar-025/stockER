@@ -10,6 +10,7 @@ from app.utils.database import Base
 
 class Stock(Base):
     """A publicly traded company / asset."""
+
     __tablename__ = "stocks"
 
     ticker: Mapped[str] = mapped_column(String(20), primary_key=True)
@@ -31,6 +32,7 @@ class OHLCV(Base):
 
     This table will be converted to a TimescaleDB hypertable in Alembic migrations.
     """
+
     __tablename__ = "ohlcv"
 
     # Composite primary key for TimescaleDB (time + partition key)
@@ -43,6 +45,4 @@ class OHLCV(Base):
     close: Mapped[float] = mapped_column(Float, nullable=False)
     volume: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
-    __table_args__ = (
-        Index("ix_ohlcv_ticker_time", "ticker", "time", unique=True),
-    )
+    __table_args__ = (Index("ix_ohlcv_ticker_time", "ticker", "time", unique=True),)

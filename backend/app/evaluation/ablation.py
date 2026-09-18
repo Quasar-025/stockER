@@ -19,7 +19,9 @@ class AblationResult:
     comparison: BaselineComparison
 
 
-def run_ablations(cases: list[BacktestCase], regime: MarketRegime | None = None) -> list[AblationResult]:
+def run_ablations(
+    cases: list[BacktestCase], regime: MarketRegime | None = None
+) -> list[AblationResult]:
     """Run the requested removals without inventing alternative model scores."""
 
     backtester = WalkForwardBacktester()
@@ -32,6 +34,8 @@ def run_ablations(cases: list[BacktestCase], regime: MarketRegime | None = None)
         ("without_temporal_modeling", FullModelBaseline()),
     )
     return [
-        AblationResult(name=name, comparison=backtester.run(cases, regime=regime, baselines=(model,)))
+        AblationResult(
+            name=name, comparison=backtester.run(cases, regime=regime, baselines=(model,))
+        )
         for name, model in experiments
     ]

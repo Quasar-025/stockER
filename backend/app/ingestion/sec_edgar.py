@@ -39,7 +39,7 @@ class SecEdgarClient:
                 "CIK": ticker,
                 "type": filing_type,
                 "output": "atom",
-                "count": 10
+                "count": 10,
             }
 
             response = await self.client.get(self.BASE_RSS_URL, params=params)
@@ -51,12 +51,14 @@ class SecEdgarClient:
             filings = []
             for entry in feed.entries:
                 # The SEC feed puts the filing type in the summary or category
-                filings.append({
-                    "title": entry.title,
-                    "link": entry.link,
-                    "updated": entry.updated,
-                    "summary": entry.summary if hasattr(entry, "summary") else "",
-                })
+                filings.append(
+                    {
+                        "title": entry.title,
+                        "link": entry.link,
+                        "updated": entry.updated,
+                        "summary": entry.summary if hasattr(entry, "summary") else "",
+                    }
+                )
 
             return filings
 

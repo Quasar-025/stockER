@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     # Initialize Vector DB (Qdrant)
     try:
         from app.vectors.store import QdrantEventStore
+
         qdrant = QdrantEventStore()
         await qdrant.ensure_collection()
         logger.info("Qdrant events collection ready")
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     neo4j = None
     try:
         from app.graph.client import Neo4jGraphClient
+
         neo4j = Neo4jGraphClient()
         await neo4j.connect()
         app.state.neo4j_client = neo4j

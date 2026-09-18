@@ -31,7 +31,8 @@ class BacktestCase:
 
     def point_in_time_candidates(self) -> tuple[HistoricalCandidate, ...]:
         return tuple(
-            candidate for candidate in self.historical_candidates
+            candidate
+            for candidate in self.historical_candidates
             if candidate.event_date < self.as_of and candidate.available_at <= self.as_of
         )
 
@@ -59,10 +60,13 @@ class _BaseBaseline:
         }
         direction, probability = max(probabilities.items(), key=lambda item: item[1])
         return BaselinePrediction(
-            model_name=self.name, expected_return=distribution.mean_return, direction_probability=probability,
+            model_name=self.name,
+            expected_return=distribution.mean_return,
+            direction_probability=probability,
             predicted_direction=direction if distribution.sample_count else "UNCERTAIN",
             return_range=(distribution.quantiles.p25, distribution.quantiles.p75),
-            sample_count=distribution.sample_count, insufficient_evidence=distribution.sample_count <= 5,
+            sample_count=distribution.sample_count,
+            insufficient_evidence=distribution.sample_count <= 5,
         )
 
 
@@ -121,13 +125,22 @@ class FullModelBaseline(_BaseBaseline):
             return self._from_returns(())
         # Evidence-count weighting does not prescribe direction; it only pools
         # independently observed historical samples for this baseline.
-        expected = sum(source.expected_return * source.sample_count for source in sources) / sum(source.sample_count for source in sources)
-        range_low = sum(source.return_range[0] * source.sample_count for source in sources) / sum(source.sample_count for source in sources)
-        range_high = sum(source.return_range[1] * source.sample_count for source in sources) / sum(source.sample_count for source in sources)
+        expected = sum(source.expected_return * source.sample_count for source in sources) / sum(
+            source.sample_count for source in sources
+        )
+        range_low = sum(source.return_range[0] * source.sample_count for source in sources) / sum(
+            source.sample_count for source in sources
+        )
+        range_high = sum(source.return_range[1] * source.sample_count for source in sources) / sum(
+            source.sample_count for source in sources
+        )
         best = max(sources, key=lambda source: source.direction_probability)
         return BaselinePrediction(
-            model_name=self.name, expected_return=expected, direction_probability=best.direction_probability,
-            predicted_direction=best.predicted_direction, return_range=(range_low, range_high),
+            model_name=self.name,
+            expected_return=expected,
+            direction_probability=best.direction_probability,
+            predicted_direction=best.predicted_direction,
+            return_range=(range_low, range_high),
             sample_count=sum(source.sample_count for source in sources),
             insufficient_evidence=any(source.insufficient_evidence for source in sources),
         )
@@ -135,6 +148,9 @@ class FullModelBaseline(_BaseBaseline):
 
 def required_baselines() -> tuple[_BaseBaseline, ...]:
     return (
-        MarketOnlyBaseline(), SimilarityOnlyBaseline(), RegimeAwareBaseline(),
-        GraphOnlyBaseline(), FullModelBaseline(),
+        MarketOnlyBaseline(),
+        SimilarityOnlyBaseline(),
+        RegimeAwareBaseline(),
+        GraphOnlyBaseline(),
+        FullModelBaseline(),
     )

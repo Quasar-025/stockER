@@ -12,6 +12,7 @@ from app.utils.database import Base
 
 class Forecast(Base):
     """Output of the Market Impact Engine, tracking predictions over time."""
+
     __tablename__ = "forecasts"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -25,7 +26,9 @@ class Forecast(Base):
     ticker: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
 
     # The prediction
-    predicted_impact: Mapped[float] = mapped_column(Float, nullable=False)  # e.g., -0.05 for -5% drop
+    predicted_impact: Mapped[float] = mapped_column(
+        Float, nullable=False
+    )  # e.g., -0.05 for -5% drop
     # Legacy name retained for compatibility.  New callers should use
     # model_confidence, which remains conceptually separate from probability.
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False)  # 0.0 to 1.0

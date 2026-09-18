@@ -117,8 +117,12 @@ class HybridSimilarityEngine:
             query.estimated_disruption_magnitude, candidate.estimated_disruption_magnitude
         )
         duration = self._numeric_proximity(
-            float(query.estimated_duration_days) if query.estimated_duration_days is not None else None,
-            float(candidate.estimated_duration_days) if candidate.estimated_duration_days is not None else None,
+            float(query.estimated_duration_days)
+            if query.estimated_duration_days is not None
+            else None,
+            float(candidate.estimated_duration_days)
+            if candidate.estimated_duration_days is not None
+            else None,
         )
         exposure = self._numeric_proximity(query_exposure, candidate_exposure)
         structural = self._jaccard(query_structure or [], candidate_structure or [])
@@ -176,9 +180,9 @@ class HybridSimilarityEngine:
         bull_regimes = {MarketRegime.BULL_LOW_VOL, MarketRegime.BULL_HIGH_VOL}
         bear_regimes = {MarketRegime.BEAR_LOW_VOL, MarketRegime.BEAR_HIGH_VOL, MarketRegime.CRISIS}
 
-        if (regime_a in bull_regimes and regime_b in bull_regimes):
+        if regime_a in bull_regimes and regime_b in bull_regimes:
             return 0.7
-        if (regime_a in bear_regimes and regime_b in bear_regimes):
+        if regime_a in bear_regimes and regime_b in bear_regimes:
             return 0.7
 
         return 0.0
@@ -192,6 +196,7 @@ class HybridSimilarityEngine:
         diff = abs(vol_a - vol_b)
         # Exponential decay: diff of 0 → 1.0, diff of 0.5 → ~0.07
         import math
+
         return math.exp(-5 * diff)
 
     @staticmethod

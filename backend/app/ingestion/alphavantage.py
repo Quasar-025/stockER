@@ -41,7 +41,7 @@ class AlphaVantageClient:
                     "function": "NEWS_SENTIMENT",
                     "tickers": ticker,
                     "apikey": self.api_key,
-                }
+                },
             )
             response.raise_for_status()
 
@@ -69,7 +69,7 @@ class AlphaVantageClient:
                     "function": "OVERVIEW",
                     "symbol": ticker,
                     "apikey": self.api_key,
-                }
+                },
             )
             response.raise_for_status()
             return response.json()

@@ -49,7 +49,9 @@ class CanonicalEvent(Base):
     description: Mapped[str] = mapped_column(String, nullable=False, default="")
     category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     subcategory: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    event_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    event_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     estimated_disruption_magnitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     estimated_duration_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     market_regime_at_event: Mapped[str | None] = mapped_column(String(50), nullable=True)
@@ -58,7 +60,9 @@ class CanonicalEvent(Base):
     affected_sectors: Mapped[list[str]] = mapped_column(JSON, default=list)
     affected_countries: Mapped[list[str]] = mapped_column(JSON, default=list)
     data_source: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    source_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_timestamp: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     ingested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # A bootstrap record may identify a candidate event but must never be used
     # as empirical calibration until sources/outcomes are verified.
@@ -83,8 +87,12 @@ class SourceArticle(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     content: Mapped[str | None] = mapped_column(String, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    source_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    source_timestamp: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     quality_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
@@ -92,7 +100,9 @@ class HistoricalEventOutcome(Base):
     """Observed multi-horizon outcome, available only after ``available_at``."""
 
     __tablename__ = "historical_event_outcomes"
-    __table_args__ = (UniqueConstraint("canonical_event_id", "ticker", name="uq_outcome_event_ticker"),)
+    __table_args__ = (
+        UniqueConstraint("canonical_event_id", "ticker", name="uq_outcome_event_ticker"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
@@ -112,7 +122,9 @@ class HistoricalEventOutcome(Base):
     volatility_change: Mapped[float | None] = mapped_column(Float, nullable=True)
     volume_change: Mapped[float | None] = mapped_column(Float, nullable=True)
     recovery_time_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    available_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    available_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
     quality_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     is_seeded_demo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
@@ -121,7 +133,9 @@ class PredictionEvaluation(Base):
     """Observed outcome for a persisted forecast and horizon."""
 
     __tablename__ = "prediction_evaluations"
-    __table_args__ = (UniqueConstraint("forecast_id", "time_horizon_days", name="uq_eval_forecast_horizon"),)
+    __table_args__ = (
+        UniqueConstraint("forecast_id", "time_horizon_days", name="uq_eval_forecast_horizon"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
@@ -133,4 +147,6 @@ class PredictionEvaluation(Base):
     actual_return: Mapped[float] = mapped_column(Float, nullable=False)
     direction_correct: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     within_prediction_interval: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-    evaluated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    evaluated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

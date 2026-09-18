@@ -30,8 +30,7 @@ class MicrostructureClient:
         await rate_limiter.acquire("finnhub")
         try:
             response = await self.client.client.get(
-                "/stock/metric",
-                params={"symbol": ticker, "metric": "all"}
+                "/stock/metric", params={"symbol": ticker, "metric": "all"}
             )
             response.raise_for_status()
 

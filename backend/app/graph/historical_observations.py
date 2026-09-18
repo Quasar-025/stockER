@@ -84,7 +84,10 @@ class HistoricalEdgeCalibrator:
 
         candidates: list[WeightedObservation] = []
         for observation in observations:
-            if observation.source_entity != source_entity or observation.target_entity != target_entity:
+            if (
+                observation.source_entity != source_entity
+                or observation.target_entity != target_entity
+            ):
                 continue
             if as_of is not None and observation.available_at > as_of:
                 continue
@@ -93,12 +96,18 @@ class HistoricalEdgeCalibrator:
             magnitude_score = self._proximity(event_magnitude, observation.event_magnitude)
             duration_score = self._proximity(
                 float(event_duration_days) if event_duration_days is not None else None,
-                float(observation.event_duration_days) if observation.event_duration_days is not None else None,
+                float(observation.event_duration_days)
+                if observation.event_duration_days is not None
+                else None,
             )
-            regime_score = 1.0 if market_regime is None or observation.market_regime == market_regime else 0.35
+            regime_score = (
+                1.0 if market_regime is None or observation.market_regime == market_regime else 0.35
+            )
             # This is a similarity weighting for estimation, not confidence.
             similarity = (magnitude_score + duration_score + regime_score) / 3.0
-            candidates.append(WeightedObservation(observation=observation, similarity_weight=similarity))
+            candidates.append(
+                WeightedObservation(observation=observation, similarity_weight=similarity)
+            )
         return candidates
 
     def estimate(
@@ -131,39 +140,60 @@ class HistoricalEdgeCalibrator:
         x_values = [entry.observation.source_return for entry in usable]
         y_values = list(residuals)
         weight_sum = sum(weights)
-        x_mean = sum(weight * value for weight, value in zip(weights, x_values, strict=False)) / weight_sum
-        y_mean = sum(weight * value for weight, value in zip(weights, y_values, strict=False)) / weight_sum
-        denominator = sum(weight * (value - x_mean) ** 2 for weight, value in zip(weights, x_values, strict=False))
+        x_mean = (
+            sum(weight * value for weight, value in zip(weights, x_values, strict=False))
+            / weight_sum
+        )
+        y_mean = (
+            sum(weight * value for weight, value in zip(weights, y_values, strict=False))
+            / weight_sum
+        )
+        denominator = sum(
+            weight * (value - x_mean) ** 2 for weight, value in zip(weights, x_values, strict=False)
+        )
         if denominator <= 1e-12:
             return EdgeCalibration(
                 coefficient=None,
                 transmission_probability=0.5,
                 metadata=EstimationMetadata(
-                    sample_count=len(usable), estimation_method=EstimationMethod.INSUFFICIENT_DATA,
-                    estimation_window=None, standard_error=None, is_prior=True,
+                    sample_count=len(usable),
+                    estimation_method=EstimationMethod.INSUFFICIENT_DATA,
+                    estimation_window=None,
+                    standard_error=None,
+                    is_prior=True,
                 ),
-                comparable_observations=tuple(usable), residual_returns=residuals,
+                comparable_observations=tuple(usable),
+                residual_returns=residuals,
                 is_insufficient_evidence=True,
             )
-        coefficient = sum(
-            weight * (x_value - x_mean) * (y_value - y_mean)
-            for weight, x_value, y_value in zip(weights, x_values, y_values, strict=False)
-        ) / denominator
+        coefficient = (
+            sum(
+                weight * (x_value - x_mean) * (y_value - y_mean)
+                for weight, x_value, y_value in zip(weights, x_values, y_values, strict=False)
+            )
+            / denominator
+        )
         intercept = y_mean - coefficient * x_mean
         squared_error = sum(
             weight * (y_value - (intercept + coefficient * x_value)) ** 2
             for weight, x_value, y_value in zip(weights, x_values, y_values, strict=False)
         )
         standard_error = sqrt(squared_error / max(1, len(usable) - 2) / denominator)
-        transmission_probability = sum(1 for value in residuals if abs(value) >= 0.002) / len(residuals)
+        transmission_probability = sum(1 for value in residuals if abs(value) >= 0.002) / len(
+            residuals
+        )
         return EdgeCalibration(
             coefficient=coefficient,
             transmission_probability=transmission_probability,
             metadata=EstimationMetadata(
-                sample_count=len(usable), estimation_method=EstimationMethod.OLS_REGRESSION,
-                estimation_window=self._window(usable), standard_error=standard_error, is_prior=False,
+                sample_count=len(usable),
+                estimation_method=EstimationMethod.OLS_REGRESSION,
+                estimation_window=self._window(usable),
+                standard_error=standard_error,
+                is_prior=False,
             ),
-            comparable_observations=tuple(usable), residual_returns=residuals,
+            comparable_observations=tuple(usable),
+            residual_returns=residuals,
             is_insufficient_evidence=False,
         )
 

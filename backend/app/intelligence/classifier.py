@@ -20,54 +20,114 @@ logger = logging.getLogger(__name__)
 # Ordered by specificity — more specific patterns first
 _CATEGORY_PATTERNS: list[tuple[list[str], EventCategory]] = [
     # Macro / Central Bank
-    (["interest rate", "rate hike", "rate cut", "basis point", "bps"], EventCategory.INTEREST_RATE_CHANGE),
-    (["federal reserve", "fed meeting", "fomc", "ecb", "bank of japan", "central bank"], EventCategory.MONETARY_POLICY),
+    (
+        ["interest rate", "rate hike", "rate cut", "basis point", "bps"],
+        EventCategory.INTEREST_RATE_CHANGE,
+    ),
+    (
+        ["federal reserve", "fed meeting", "fomc", "ecb", "bank of japan", "central bank"],
+        EventCategory.MONETARY_POLICY,
+    ),
     (["inflation", "cpi", "consumer price", "deflation"], EventCategory.INFLATION_DATA),
-    (["unemployment", "jobs report", "nonfarm payroll", "labor market", "jobless claims"], EventCategory.EMPLOYMENT_DATA),
+    (
+        ["unemployment", "jobs report", "nonfarm payroll", "labor market", "jobless claims"],
+        EventCategory.EMPLOYMENT_DATA,
+    ),
     (["gdp", "gross domestic product", "economic growth", "recession"], EventCategory.GDP_REPORT),
-
     # Geopolitical
     (["tariff", "trade war", "trade deal", "trade deficit"], EventCategory.TRADE_WAR),
     (["sanction", "embargo", "trade restriction", "export ban"], EventCategory.SANCTIONS),
-    (["military", "war", "invasion", "missile", "armed conflict", "airstrike"], EventCategory.MILITARY_CONFLICT),
-    (["coup", "political crisis", "government collapse", "regime change"], EventCategory.POLITICAL_INSTABILITY),
+    (
+        ["military", "war", "invasion", "missile", "armed conflict", "airstrike"],
+        EventCategory.MILITARY_CONFLICT,
+    ),
+    (
+        ["coup", "political crisis", "government collapse", "regime change"],
+        EventCategory.POLITICAL_INSTABILITY,
+    ),
     (["election", "presidential race", "midterm", "referendum", "vote"], EventCategory.ELECTION),
-
     # Company / Corporate
-    (["earnings beat", "revenue beat", "profit surge", "exceeded expectations"], EventCategory.EARNINGS_SURPRISE),
-    (["earnings miss", "revenue miss", "profit decline", "missed expectations", "disappointing quarter"], EventCategory.EARNINGS_MISS),
-    (["merger", "acquisition", "takeover", "buyout", "deal announced"], EventCategory.MERGER_ACQUISITION),
-    (["ceo resign", "ceo step", "new ceo", "chief executive", "leadership change"], EventCategory.CEO_CHANGE),
-    (["bankruptcy", "chapter 11", "chapter 7", "insolvent", "liquidation"], EventCategory.BANKRUPTCY),
-    (["fraud", "scandal", "sec investigation", "accounting irregularity", "whistleblower"], EventCategory.FRAUD_SCANDAL),
-    (["product launch", "new product", "unveil", "release", "announce"], EventCategory.PRODUCT_LAUNCH),
-    (["regulatory", "regulation", "antitrust", "compliance", "fine", "penalty"], EventCategory.REGULATORY_ACTION),
-    (["layoff", "job cut", "workforce reduction", "restructuring", "downsizing"], EventCategory.LAYOFFS),
+    (
+        ["earnings beat", "revenue beat", "profit surge", "exceeded expectations"],
+        EventCategory.EARNINGS_SURPRISE,
+    ),
+    (
+        [
+            "earnings miss",
+            "revenue miss",
+            "profit decline",
+            "missed expectations",
+            "disappointing quarter",
+        ],
+        EventCategory.EARNINGS_MISS,
+    ),
+    (
+        ["merger", "acquisition", "takeover", "buyout", "deal announced"],
+        EventCategory.MERGER_ACQUISITION,
+    ),
+    (
+        ["ceo resign", "ceo step", "new ceo", "chief executive", "leadership change"],
+        EventCategory.CEO_CHANGE,
+    ),
+    (
+        ["bankruptcy", "chapter 11", "chapter 7", "insolvent", "liquidation"],
+        EventCategory.BANKRUPTCY,
+    ),
+    (
+        ["fraud", "scandal", "sec investigation", "accounting irregularity", "whistleblower"],
+        EventCategory.FRAUD_SCANDAL,
+    ),
+    (
+        ["product launch", "new product", "unveil", "release", "announce"],
+        EventCategory.PRODUCT_LAUNCH,
+    ),
+    (
+        ["regulatory", "regulation", "antitrust", "compliance", "fine", "penalty"],
+        EventCategory.REGULATORY_ACTION,
+    ),
+    (
+        ["layoff", "job cut", "workforce reduction", "restructuring", "downsizing"],
+        EventCategory.LAYOFFS,
+    ),
     (["buyback", "share repurchase", "stock repurchase"], EventCategory.STOCK_BUYBACK),
     (["dividend", "payout", "distribution", "yield increase"], EventCategory.DIVIDEND_CHANGE),
-
     # Supply Chain / Industry
-    (["supply chain", "shortage", "supply disruption", "factory shutdown", "port congestion"], EventCategory.SUPPLY_CHAIN_DISRUPTION),
+    (
+        ["supply chain", "shortage", "supply disruption", "factory shutdown", "port congestion"],
+        EventCategory.SUPPLY_CHAIN_DISRUPTION,
+    ),
     (["oil price", "commodity", "gold", "copper", "raw material"], EventCategory.COMMODITY_SHOCK),
     (["energy crisis", "power outage", "oil embargo", "opec"], EventCategory.ENERGY_CRISIS),
     (["chip shortage", "semiconductor", "fab shutdown", "wafer"], EventCategory.CHIP_SHORTAGE),
-
     # Natural / Climate
-    (["earthquake", "hurricane", "tsunami", "flood", "wildfire", "volcano"], EventCategory.NATURAL_DISASTER),
+    (
+        ["earthquake", "hurricane", "tsunami", "flood", "wildfire", "volcano"],
+        EventCategory.NATURAL_DISASTER,
+    ),
     (["pandemic", "covid", "virus outbreak", "epidemic", "lockdown"], EventCategory.PANDEMIC),
     (["climate", "carbon", "emission", "green energy", "esg"], EventCategory.CLIMATE_EVENT),
-
     # Market Structure
     (["market crash", "black monday", "bear market", "correction"], EventCategory.MARKET_CRASH),
     (["flash crash", "circuit breaker", "trading halt"], EventCategory.FLASH_CRASH),
     (["short squeeze", "gamma squeeze", "wallstreetbets"], EventCategory.SHORT_SQUEEZE),
-    (["liquidity crisis", "credit crunch", "bank run", "contagion"], EventCategory.LIQUIDITY_CRISIS),
+    (
+        ["liquidity crisis", "credit crunch", "bank run", "contagion"],
+        EventCategory.LIQUIDITY_CRISIS,
+    ),
     (["currency crisis", "devaluation", "forex", "exchange rate"], EventCategory.CURRENCY_CRISIS),
-
     # Tech / Innovation
-    (["artificial intelligence", "ai breakthrough", "machine learning", "gpt", "llm"], EventCategory.AI_BREAKTHROUGH),
-    (["cyber attack", "data breach", "hack", "ransomware", "security breach"], EventCategory.CYBERSECURITY_BREACH),
-    (["tech regulation", "big tech", "antitrust tech", "platform regulation"], EventCategory.TECH_REGULATION),
+    (
+        ["artificial intelligence", "ai breakthrough", "machine learning", "gpt", "llm"],
+        EventCategory.AI_BREAKTHROUGH,
+    ),
+    (
+        ["cyber attack", "data breach", "hack", "ransomware", "security breach"],
+        EventCategory.CYBERSECURITY_BREACH,
+    ),
+    (
+        ["tech regulation", "big tech", "antitrust tech", "platform regulation"],
+        EventCategory.TECH_REGULATION,
+    ),
 ]
 
 
@@ -94,6 +154,7 @@ class EventClassifier:
         if self._finbert_pipeline is None and self._use_finbert:
             try:
                 from transformers import pipeline
+
                 self._finbert_pipeline = pipeline(
                     "sentiment-analysis",
                     model="ProsusAI/finbert",
@@ -142,8 +203,28 @@ class EventClassifier:
         """Simple keyword-based sentiment fallback when FinBERT unavailable."""
         text_lower = text.lower()
 
-        positive_words = {"beat", "surge", "growth", "rally", "bullish", "strong", "gain", "profit", "upgrade"}
-        negative_words = {"miss", "crash", "decline", "bearish", "weak", "loss", "downgrade", "layoff", "bankruptcy"}
+        positive_words = {
+            "beat",
+            "surge",
+            "growth",
+            "rally",
+            "bullish",
+            "strong",
+            "gain",
+            "profit",
+            "upgrade",
+        }
+        negative_words = {
+            "miss",
+            "crash",
+            "decline",
+            "bearish",
+            "weak",
+            "loss",
+            "downgrade",
+            "layoff",
+            "bankruptcy",
+        }
 
         pos_count = sum(1 for w in positive_words if w in text_lower)
         neg_count = sum(1 for w in negative_words if w in text_lower)
@@ -169,6 +250,7 @@ class EventClassifier:
         """
         # Base severity by category type
         from app.intelligence.ontology import CATEGORY_SCOPE
+
         scope = CATEGORY_SCOPE.get(category, "single_stock")
 
         base_severity = {

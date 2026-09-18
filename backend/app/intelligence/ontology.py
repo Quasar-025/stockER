@@ -78,10 +78,10 @@ class EventCategory(StrEnum):
 class SeverityLevel(StrEnum):
     """Discrete severity levels mapped to score ranges."""
 
-    LOW = "LOW"              # 0.0 - 0.3: Minor, minimal market impact expected
-    MEDIUM = "MEDIUM"        # 0.3 - 0.6: Moderate, sector-level impact
-    HIGH = "HIGH"            # 0.6 - 0.8: Significant, multi-sector impact
-    CRITICAL = "CRITICAL"    # 0.8 - 1.0: Extreme, market-wide impact
+    LOW = "LOW"  # 0.0 - 0.3: Minor, minimal market impact expected
+    MEDIUM = "MEDIUM"  # 0.3 - 0.6: Moderate, sector-level impact
+    HIGH = "HIGH"  # 0.6 - 0.8: Significant, multi-sector impact
+    CRITICAL = "CRITICAL"  # 0.8 - 1.0: Extreme, market-wide impact
 
     @classmethod
     def from_score(cls, score: float) -> "SeverityLevel":
@@ -108,7 +108,9 @@ class EventOntologySchema(BaseModel):
     source_url: str = Field(..., description="Original source URL")
     published_at: datetime = Field(..., description="Publication timestamp")
     canonical_event_id: uuid.UUID | None = Field(default=None)
-    event_date: datetime | None = Field(default=None, description="When the event occurred, if known")
+    event_date: datetime | None = Field(
+        default=None, description="When the event occurred, if known"
+    )
 
     # Classification
     category: EventCategory = Field(..., description="Event category from ontology")
@@ -126,8 +128,7 @@ class EventOntologySchema(BaseModel):
 
     # Supply chain propagation hints
     supply_chain_impact: list[str] = Field(
-        default_factory=list,
-        description="List of downstream entities affected via supply chain"
+        default_factory=list, description="List of downstream entities affected via supply chain"
     )
 
     @property

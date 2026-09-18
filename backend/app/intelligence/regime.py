@@ -22,12 +22,12 @@ logger = logging.getLogger(__name__)
 class MarketRegime(StrEnum):
     """Market regime classifications."""
 
-    BULL_LOW_VOL = "BULL_LOW_VOL"          # Rising markets, calm
-    BULL_HIGH_VOL = "BULL_HIGH_VOL"        # Rising markets, choppy
-    BEAR_LOW_VOL = "BEAR_LOW_VOL"          # Falling markets, orderly
-    BEAR_HIGH_VOL = "BEAR_HIGH_VOL"        # Falling markets, panic
-    SIDEWAYS = "SIDEWAYS"                   # Range-bound
-    CRISIS = "CRISIS"                       # Extreme drawdown / crash
+    BULL_LOW_VOL = "BULL_LOW_VOL"  # Rising markets, calm
+    BULL_HIGH_VOL = "BULL_HIGH_VOL"  # Rising markets, choppy
+    BEAR_LOW_VOL = "BEAR_LOW_VOL"  # Falling markets, orderly
+    BEAR_HIGH_VOL = "BEAR_HIGH_VOL"  # Falling markets, panic
+    SIDEWAYS = "SIDEWAYS"  # Range-bound
+    CRISIS = "CRISIS"  # Extreme drawdown / crash
 
 
 @dataclass
@@ -38,7 +38,7 @@ class RegimeDetectionResult:
     confidence: float  # 0-1 confidence in the classification
     avg_return: float  # Average return in the lookback window
     volatility: float  # Annualized volatility
-    description: str   # Human-readable regime description
+    description: str  # Human-readable regime description
 
 
 class MarketRegimeDetector:

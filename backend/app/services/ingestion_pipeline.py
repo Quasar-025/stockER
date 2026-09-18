@@ -1,6 +1,6 @@
 """Event ingestion pipeline — orchestrates the full flow from raw news to stored events.
 
-    Fetch → Deduplicate → Classify → Embed → Store → Produce
+Fetch → Deduplicate → Classify → Embed → Store → Produce
 """
 
 import logging
@@ -70,8 +70,9 @@ class IngestionPipeline:
             except Exception as e:
                 logger.error(f"Error processing article: {e}")
 
-        logger.info(f"Processed {len(processed)} events for {ticker} "
-                     f"(from {len(news_items)} articles)")
+        logger.info(
+            f"Processed {len(processed)} events for {ticker} (from {len(news_items)} articles)"
+        )
         return processed
 
     async def ingest_event_text(
@@ -157,9 +158,7 @@ class IngestionPipeline:
             "affected_tickers": event.affected_tickers,
         }
 
-    async def _process_article(
-        self, article: dict[str, Any], ticker: str
-    ) -> dict[str, Any] | None:
+    async def _process_article(self, article: dict[str, Any], ticker: str) -> dict[str, Any] | None:
         """Process a single Finnhub news article."""
         title = article.get("headline", "")
         description = article.get("summary", "")
@@ -190,16 +189,19 @@ class IngestionPipeline:
             ON CONFLICT (id) DO NOTHING
         """)
 
-        await self.session.execute(stmt, {
-            "id": event_id,
-            "title": event.title,
-            "description": event.description[:2000],
-            "source_url": event.source_url[:500],
-            "published_at": event.published_at,
-            "category": event.category.value,
-            "severity_score": event.severity_score,
-            "tickers": ",".join(event.affected_tickers),
-            "sectors": ",".join(event.affected_sectors),
-            "countries": ",".join(event.affected_countries),
-        })
+        await self.session.execute(
+            stmt,
+            {
+                "id": event_id,
+                "title": event.title,
+                "description": event.description[:2000],
+                "source_url": event.source_url[:500],
+                "published_at": event.published_at,
+                "category": event.category.value,
+                "severity_score": event.severity_score,
+                "tickers": ",".join(event.affected_tickers),
+                "sectors": ",".join(event.affected_sectors),
+                "countries": ",".join(event.affected_countries),
+            },
+        )
         await self.session.commit()

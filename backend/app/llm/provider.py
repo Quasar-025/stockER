@@ -37,6 +37,7 @@ class OllamaProvider(LLMProvider):
         """Generate response via Ollama API."""
         try:
             import ollama
+
             client = ollama.AsyncClient(host=self.host)
 
             messages = []
@@ -55,6 +56,7 @@ class OllamaProvider(LLMProvider):
         """Check if Ollama is running."""
         try:
             import ollama
+
             client = ollama.AsyncClient(host=self.host)
             await client.list()
             return True
@@ -75,6 +77,7 @@ class OpenAIProvider(LLMProvider):
 
         try:
             from openai import AsyncOpenAI
+
             client = AsyncOpenAI(api_key=self.api_key)
 
             messages = []

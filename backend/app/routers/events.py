@@ -16,6 +16,7 @@ router = APIRouter(prefix="/api/events", tags=["events"])
 
 class IngestRequest(BaseModel):
     """Request body for manual event ingestion."""
+
     title: str
     description: str
     source_url: str = ""
@@ -122,6 +123,7 @@ async def ingest_event(
         # Try to set up Qdrant (non-fatal if unavailable)
         try:
             from app.vectors.store import QdrantEventStore
+
             pipeline.qdrant_store = QdrantEventStore()
         except Exception:
             pass

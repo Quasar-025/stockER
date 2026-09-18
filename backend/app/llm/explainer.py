@@ -43,13 +43,15 @@ def build_explanation_prompt(forecast: ForecastResult | ProbabilisticForecast) -
     similar_events_text = ""
     for i, event in enumerate(forecast.similar_events, 1):
         similar_events_text += (
-            f"\n  {i}. \"{event['title']}\" "
+            f'\n  {i}. "{event["title"]}" '
             f"(Category: {event['category']}, "
             f"Similarity: {event['similarity_score']:.0%}, "
             f"Historical Impact: {event['historical_impact']:+.1%})"
         )
 
-    causal_chain_text = " → ".join(forecast.causal_chain) if forecast.causal_chain else "No causal chain available"
+    causal_chain_text = (
+        " → ".join(forecast.causal_chain) if forecast.causal_chain else "No causal chain available"
+    )
 
     return f"""Explain the following market impact prediction to an investor.
 
@@ -88,7 +90,9 @@ def _build_probabilistic_prompt(forecast: ProbabilisticForecast) -> str:
     impact_lines: list[str] = []
     for impact in impacts:
         decomposition = impact.effect_decomposition
-        sources = sorted({source for path in impact.causal_paths for source in path.evidence_sources})
+        sources = sorted(
+            {source for path in impact.causal_paths for source in path.evidence_sources}
+        )
         impact_lines.append(
             f"- {impact.ticker} (depth {impact.propagation_depth}, {impact.time_horizon_days}d): "
             f"direction={impact.direction.value}; direction likelihood={impact.direction_probability:.0%}; "
@@ -129,7 +133,9 @@ and state where the result has insufficient historical evidence. Do not introduc
 without a supplied source or sample."""
 
 
-async def explain_forecast(forecast: ForecastResult | ProbabilisticForecast, provider: LLMProvider) -> str:
+async def explain_forecast(
+    forecast: ForecastResult | ProbabilisticForecast, provider: LLMProvider
+) -> str:
     """Generate a natural language explanation of a forecast.
 
     Args:
@@ -200,6 +206,8 @@ def _probabilistic_fallback(forecast: ProbabilisticForecast) -> str:
         if impact.insufficient_historical_evidence:
             lines.append("  Insufficient historical evidence for a reliable directional estimate.")
     if forecast.potential_beneficiaries:
-        lines.append("Potential beneficiaries are conditional substitution channels, not guaranteed gains.")
+        lines.append(
+            "Potential beneficiaries are conditional substitution channels, not guaranteed gains."
+        )
     lines.extend(f"Limitation: {item}" for item in forecast.limitations)
     return "\n".join(lines)

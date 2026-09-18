@@ -1,6 +1,6 @@
 """Forecast pipeline — orchestrates the full prediction flow.
 
-    Event → Classify → Find Similar → Detect Regime → Impact → Explain
+Event → Classify → Find Similar → Detect Regime → Impact → Explain
 """
 
 import logging
@@ -165,9 +165,7 @@ class ForecastPipeline:
         try:
             end = date.today()
             start = end - timedelta(days=120)
-            spy_closes = self.yf_client.download_close_series(
-                MARKET_BENCHMARK, start, end
-            )
+            spy_closes = self.yf_client.download_close_series(MARKET_BENCHMARK, start, end)
 
             if len(spy_closes) < 20:
                 logger.warning("Insufficient SPY data for regime detection")
@@ -201,9 +199,7 @@ class ForecastPipeline:
         if self.qdrant_store:
             try:
                 search_text = f"{event.title}. {event.description}"
-                qdrant_results = await self.qdrant_store.search_similar(
-                    search_text, top_k=30
-                )
+                qdrant_results = await self.qdrant_store.search_similar(search_text, top_k=30)
 
                 for event_id, semantic_score, payload in qdrant_results:
                     # Reconstruct a minimal EventOntologySchema from payload
@@ -301,9 +297,8 @@ class ForecastPipeline:
     def _infer_tickers(self, event: EventOntologySchema) -> list[str]:
         """Infer affected tickers from event category."""
         from app.ingestion.outcome_collector import CATEGORY_TICKER_MAP
-        tickers, _ = CATEGORY_TICKER_MAP.get(
-            event.category.value, (["SPY"], "Technology")
-        )
+
+        tickers, _ = CATEGORY_TICKER_MAP.get(event.category.value, (["SPY"], "Technology"))
         return tickers
 
     def _format_forecast(self, result: ForecastResult) -> dict[str, Any]:
@@ -377,8 +372,10 @@ Provide:
 
         except Exception as e:
             logger.warning(f"LLM explanation failed, using fallback: {e}")
-            lines = [f"**{event.title}** — {event.category.value} event, "
-                     f"severity {event.severity_level.value}, regime {regime.value}."]
+            lines = [
+                f"**{event.title}** — {event.category.value} event, "
+                f"severity {event.severity_level.value}, regime {regime.value}."
+            ]
             for f in forecasts[:5]:
                 lines.append(
                     f"- **{f['ticker']}**: {f['predicted_impact_pct']} "
@@ -404,6 +401,8 @@ Provide:
             # For now, we will skip inserting into the 'forecasts' table because
             # the schema expects a strict event_id foreign key and one row per ticker.
             # We'll just log it instead of crashing the DB schema.
-            logger.info(f"Forecast {forecast_id} generated successfully but DB storage is mocked for now.")
+            logger.info(
+                f"Forecast {forecast_id} generated successfully but DB storage is mocked for now."
+            )
         except Exception as e:
             logger.error(f"Failed to store forecast: {e}")

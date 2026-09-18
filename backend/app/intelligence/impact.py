@@ -27,12 +27,12 @@ class ForecastResult:
 
     event_id: uuid.UUID
     ticker: str
-    predicted_impact: float      # e.g., -0.05 for -5%
-    confidence_score: float      # 0-1
+    predicted_impact: float  # e.g., -0.05 for -5%
+    confidence_score: float  # 0-1
     time_horizon_days: int
     market_regime: MarketRegime
-    similar_events: list[dict]   # List of similar event summaries
-    causal_chain: list[str]      # Causal propagation path
+    similar_events: list[dict]  # List of similar event summaries
+    causal_chain: list[str]  # Causal propagation path
     created_at: datetime
     # V2 fields remain distinct: likelihood is not reliability.
     direction_probability: float = 0.0
@@ -112,13 +112,15 @@ class MarketImpactEngine:
             weighted_impact += weight * hist_impact
             total_weight += weight
 
-            event_summaries.append({
-                "title": hist_event.title,
-                "category": hist_event.category.value,
-                "similarity_score": breakdown.overall_score,
-                "historical_impact": hist_impact,
-                "regime_at_time": breakdown.regime_score,
-            })
+            event_summaries.append(
+                {
+                    "title": hist_event.title,
+                    "category": hist_event.category.value,
+                    "similarity_score": breakdown.overall_score,
+                    "historical_impact": hist_impact,
+                    "regime_at_time": breakdown.regime_score,
+                }
+            )
 
         # Compute prediction
         predicted_impact = weighted_impact / total_weight if total_weight > 0 else 0.0
@@ -130,11 +132,16 @@ class MarketImpactEngine:
             [impact for _, _, impact in similar_events]
         )
         uncertainty = min(1.0, (impact_distribution.standard_error or 0.05) / 0.05)
-        reliability = self.reliability_calibrator.estimate(ReliabilityInputs(
-            sample_count=len(similar_events), consistency=impact_distribution.historical_consistency,
-            similarity_quality=avg_similarity, data_quality=1.0, edge_confidence=1.0,
-            model_uncertainty=uncertainty,
-        ))
+        reliability = self.reliability_calibrator.estimate(
+            ReliabilityInputs(
+                sample_count=len(similar_events),
+                consistency=impact_distribution.historical_consistency,
+                similarity_quality=avg_similarity,
+                data_quality=1.0,
+                edge_confidence=1.0,
+                model_uncertainty=uncertainty,
+            )
+        )
         direction_probability = max(
             impact_distribution.probability_negative,
             impact_distribution.probability_positive,

@@ -47,10 +47,7 @@ class QdrantEventStore:
                     distance=models.Distance.COSINE,
                 ),
             )
-            logger.info(
-                f"Created Qdrant collection '{COLLECTION_NAME}' "
-                f"(dim={dimension}, cosine)"
-            )
+            logger.info(f"Created Qdrant collection '{COLLECTION_NAME}' (dim={dimension}, cosine)")
         else:
             logger.debug(f"Qdrant collection '{COLLECTION_NAME}' already exists")
 
@@ -136,10 +133,7 @@ class QdrantEventStore:
             score_threshold=score_threshold,
         )
 
-        return [
-            (str(hit.id), hit.score, hit.payload or {})
-            for hit in results.points
-        ]
+        return [(str(hit.id), hit.score, hit.payload or {}) for hit in results.points]
 
     def count(self) -> int:
         """Return the number of vectors in the collection."""

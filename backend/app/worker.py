@@ -11,10 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize Celery app
 celery_app = Celery(
-    "stocker_worker",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
-    include=["app.tasks"]
+    "stocker_worker", broker=settings.REDIS_URL, backend=settings.REDIS_URL, include=["app.tasks"]
 )
 
 # Celery configuration

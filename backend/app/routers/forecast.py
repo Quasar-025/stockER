@@ -16,6 +16,7 @@ router = APIRouter(prefix="/api/forecast", tags=["forecast"])
 
 class ForecastRequest(BaseModel):
     """Request body for generating a new forecast."""
+
     title: str
     description: str
     affected_tickers: list[str] = []
@@ -37,6 +38,7 @@ async def generate_forecast(
     if not neo4j_client:
         # Lazy initialization if it failed during startup
         from app.graph.client import Neo4jGraphClient
+
         try:
             neo4j_client = Neo4jGraphClient()
             fastapi_req.app.state.neo4j_client = neo4j_client
@@ -50,6 +52,7 @@ async def generate_forecast(
         # Try to set up Qdrant (non-fatal if unavailable)
         try:
             from app.vectors.store import QdrantEventStore
+
             pipeline.qdrant_store = QdrantEventStore()
         except Exception:
             pass
@@ -109,6 +112,7 @@ async def get_forecast(forecast_id: str, db: AsyncSession = Depends(get_db)):  #
         raise HTTPException(status_code=404, detail="Forecast not found")
 
     import json
+
     response = dict(forecast)
     if isinstance(response.get("forecasts_json"), str):
         response["forecasts_json"] = json.loads(response["forecasts_json"])

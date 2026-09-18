@@ -28,7 +28,9 @@ class FinnhubRESTClient:
             timeout=10.0,
         )
 
-    async def get_company_news(self, ticker: str, start_date: str, end_date: str) -> list[dict[str, Any]]:
+    async def get_company_news(
+        self, ticker: str, start_date: str, end_date: str
+    ) -> list[dict[str, Any]]:
         """Fetch company news for a specific ticker and date range.
 
         Dates must be in YYYY-MM-DD format.
@@ -37,8 +39,7 @@ class FinnhubRESTClient:
 
         try:
             response = await self.client.get(
-                "/company-news",
-                params={"symbol": ticker, "from": start_date, "to": end_date}
+                "/company-news", params={"symbol": ticker, "from": start_date, "to": end_date}
             )
             response.raise_for_status()
 
@@ -59,10 +60,7 @@ class FinnhubRESTClient:
         await rate_limiter.acquire("finnhub")
 
         try:
-            response = await self.client.get(
-                "/stock/profile2",
-                params={"symbol": ticker}
-            )
+            response = await self.client.get("/stock/profile2", params={"symbol": ticker})
             response.raise_for_status()
             return response.json()
 

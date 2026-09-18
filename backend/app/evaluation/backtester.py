@@ -37,24 +37,42 @@ class WalkForwardBacktester:
                 records[model.name].append(self._record(case, prediction))
         return BaselineComparison(
             predictions=records,
-            metrics_by_model_and_depth={name: metrics_by_depth(values) for name, values in records.items()},
+            metrics_by_model_and_depth={
+                name: metrics_by_depth(values) for name, values in records.items()
+            },
         )
 
     def rolling_window(
-        self, cases: list[BacktestCase], window_start: datetime, window_end: datetime, *, regime: MarketRegime | None = None
+        self,
+        cases: list[BacktestCase],
+        window_start: datetime,
+        window_end: datetime,
+        *,
+        regime: MarketRegime | None = None,
     ) -> BaselineComparison:
-        return self.run([case for case in cases if window_start <= case.as_of <= window_end], regime=regime)
+        return self.run(
+            [case for case in cases if window_start <= case.as_of <= window_end], regime=regime
+        )
 
     def out_of_time(
-        self, cases: list[BacktestCase], holdout_start: datetime, *, regime: MarketRegime | None = None
+        self,
+        cases: list[BacktestCase],
+        holdout_start: datetime,
+        *,
+        regime: MarketRegime | None = None,
     ) -> BaselineComparison:
         return self.run([case for case in cases if case.as_of >= holdout_start], regime=regime)
 
     @staticmethod
     def _record(case: BacktestCase, prediction: BaselinePrediction) -> PredictionRecord:
         return PredictionRecord(
-            model_name=prediction.model_name, ticker=case.ticker, propagation_depth=case.propagation_depth,
-            predicted_return=prediction.expected_return, actual_return=case.actual_return,
-            direction_probability=prediction.direction_probability, predicted_direction=prediction.predicted_direction,
-            return_range=prediction.return_range, horizon_days=case.horizon_days,
+            model_name=prediction.model_name,
+            ticker=case.ticker,
+            propagation_depth=case.propagation_depth,
+            predicted_return=prediction.expected_return,
+            actual_return=case.actual_return,
+            direction_probability=prediction.direction_probability,
+            predicted_direction=prediction.predicted_direction,
+            return_range=prediction.return_range,
+            horizon_days=case.horizon_days,
         )

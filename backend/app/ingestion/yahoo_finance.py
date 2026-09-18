@@ -89,15 +89,17 @@ class YahooFinanceClient:
                         ts = ts.replace(tzinfo=UTC)
 
                     vol = row.get("Volume", 0)
-                    rows.append({
-                        "time": ts,
-                        "ticker": ticker,
-                        "open": float(row["Open"]),
-                        "high": float(row["High"]),
-                        "low": float(row["Low"]),
-                        "close": float(row["Close"]),
-                        "volume": int(vol) if vol == vol else 0,  # NaN guard
-                    })
+                    rows.append(
+                        {
+                            "time": ts,
+                            "ticker": ticker,
+                            "open": float(row["Open"]),
+                            "high": float(row["High"]),
+                            "low": float(row["Low"]),
+                            "close": float(row["Close"]),
+                            "volume": int(vol) if vol == vol else 0,  # NaN guard
+                        }
+                    )
 
                 logger.info(f"Downloaded {len(rows)} OHLCV rows for {ticker}")
 
@@ -142,15 +144,18 @@ class YahooFinanceClient:
 
         # Need to attach cache to the function, not method, to avoid caching `self`
         if not hasattr(self.__class__, "_name_cache"):
+
             @functools.lru_cache(maxsize=1024)
             def _fetch(t: str):
                 try:
                     import yfinance as yf
+
                     tk = yf.Ticker(t)
-                    return tk.info.get('shortName') or tk.info.get('longName')
+                    return tk.info.get("shortName") or tk.info.get("longName")
                 except Exception as e:
                     logger.warning(f"Failed to fetch company name for {t}: {e}")
                     return None
+
             self.__class__._name_cache = _fetch
 
         return self.__class__._name_cache(ticker)

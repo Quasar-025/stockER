@@ -41,7 +41,7 @@ class EventProducer:
                 topic,
                 key=key.encode("utf-8"),
                 value=json.dumps(value).encode("utf-8"),
-                callback=self._delivery_report
+                callback=self._delivery_report,
             )
             # Poll to handle delivery reports
             self.producer.poll(0)
@@ -59,11 +59,9 @@ class EventConsumer:
     def __init__(self, group_id: str, topics: list[str]) -> None:
         """Initialize the Kafka consumer."""
         config = get_kafka_config()
-        config.update({
-            "group.id": group_id,
-            "auto.offset.reset": "earliest",
-            "enable.auto.commit": False
-        })
+        config.update(
+            {"group.id": group_id, "auto.offset.reset": "earliest", "enable.auto.commit": False}
+        )
         self.consumer = Consumer(config)
         self.consumer.subscribe(topics)
         self._running = False

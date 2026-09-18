@@ -34,6 +34,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
     # Redis
     try:
         import redis
+
         r = redis.Redis(host="localhost", port=6379, socket_timeout=2)
         r.ping()
         status["components"]["redis"] = {"status": "healthy"}
@@ -44,6 +45,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
     # Qdrant
     try:
         from qdrant_client import QdrantClient
+
         qc = QdrantClient(host="localhost", port=6333, timeout=2)
         qc.get_collections()
         status["components"]["qdrant"] = {"status": "healthy"}
@@ -54,12 +56,11 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
     # Neo4j
     try:
         from app.graph.client import Neo4jGraphClient
+
         neo4j = Neo4jGraphClient()
         healthy = await neo4j.healthcheck()
         await neo4j.close()
-        status["components"]["neo4j"] = {
-            "status": "healthy" if healthy else "unhealthy"
-        }
+        status["components"]["neo4j"] = {"status": "healthy" if healthy else "unhealthy"}
         if not healthy:
             status["status"] = "degraded"
     except Exception as e:
@@ -84,9 +85,7 @@ async def data_source_status(db: AsyncSession = Depends(get_db)):  # noqa: B008
 
     # OHLCV freshness
     try:
-        result = await db.execute(text(
-            "SELECT COUNT(*) as cnt, MAX(time) as latest FROM ohlcv"
-        ))
+        result = await db.execute(text("SELECT COUNT(*) as cnt, MAX(time) as latest FROM ohlcv"))
         row = result.mappings().first()
         sources["ohlcv"] = {
             "count": row["cnt"] if row else 0,
@@ -105,9 +104,7 @@ async def data_source_status(db: AsyncSession = Depends(get_db)):  # noqa: B008
 
     # Canonical events
     try:
-        result = await db.execute(text(
-            "SELECT COUNT(*) as cnt FROM canonical_events"
-        ))
+        result = await db.execute(text("SELECT COUNT(*) as cnt FROM canonical_events"))
         row = result.mappings().first()
         sources["canonical_events"] = {"count": row["cnt"] if row else 0}
     except Exception:
@@ -115,9 +112,7 @@ async def data_source_status(db: AsyncSession = Depends(get_db)):  # noqa: B008
 
     # Historical outcomes
     try:
-        result = await db.execute(text(
-            "SELECT COUNT(*) as cnt FROM historical_event_outcomes"
-        ))
+        result = await db.execute(text("SELECT COUNT(*) as cnt FROM historical_event_outcomes"))
         row = result.mappings().first()
         sources["historical_outcomes"] = {"count": row["cnt"] if row else 0}
     except Exception:

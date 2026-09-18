@@ -47,7 +47,7 @@ class DeduplicationEngine:
         # Remove common noise prefixes
         for prefix in ["breaking:", "update:", "exclusive:", "report:"]:
             if normalized.startswith(prefix):
-                normalized = normalized[len(prefix):].strip()
+                normalized = normalized[len(prefix) :].strip()
         return normalized
 
     def _content_hash(self, text: str) -> str:
@@ -57,19 +57,12 @@ class DeduplicationEngine:
     def _evict_expired(self) -> None:
         """Remove entries older than TTL."""
         now = datetime.utcnow()
-        expired_urls = [
-            url for url, ts in self._url_cache.items()
-            if now - ts > self.ttl
-        ]
+        expired_urls = [url for url, ts in self._url_cache.items() if now - ts > self.ttl]
         for url in expired_urls:
             del self._url_cache[url]
             # Also remove from reverse caches
-            self._title_cache = {
-                k: v for k, v in self._title_cache.items() if v != url
-            }
-            self._content_cache = {
-                k: v for k, v in self._content_cache.items() if v != url
-            }
+            self._title_cache = {k: v for k, v in self._title_cache.items() if v != url}
+            self._content_cache = {k: v for k, v in self._content_cache.items() if v != url}
 
     def check(self, url: str, title: str, description: str) -> DeduplicationResult:
         """Check if an article is a duplicate.

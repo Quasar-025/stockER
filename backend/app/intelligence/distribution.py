@@ -41,9 +41,15 @@ class EmpiricalImpactDistribution(BaseModel):
         values = sorted(float(value) for value in returns)
         if not values:
             return cls(
-                mean_return=0.0, quantiles=ImpactQuantileSummary(p25=0.0, p50=0.0, p75=0.0),
-                probability_positive=0.5, probability_negative=0.5, probability_neutral=0.0,
-                historical_consistency=0.0, sample_count=0, standard_error=None, is_prior=True,
+                mean_return=0.0,
+                quantiles=ImpactQuantileSummary(p25=0.0, p50=0.0, p75=0.0),
+                probability_positive=0.5,
+                probability_negative=0.5,
+                probability_neutral=0.0,
+                historical_consistency=0.0,
+                sample_count=0,
+                standard_error=None,
+                is_prior=True,
             )
         average = mean(values)
         positive = sum(value > neutral_band for value in values) / len(values)
@@ -53,9 +59,13 @@ class EmpiricalImpactDistribution(BaseModel):
         return cls(
             mean_return=average,
             quantiles=ImpactQuantileSummary(
-                p25=cls._quantile(values, 0.25), p50=cls._quantile(values, 0.50), p75=cls._quantile(values, 0.75)
+                p25=cls._quantile(values, 0.25),
+                p50=cls._quantile(values, 0.50),
+                p75=cls._quantile(values, 0.75),
             ),
-            probability_positive=positive, probability_negative=negative, probability_neutral=neutral,
+            probability_positive=positive,
+            probability_negative=negative,
+            probability_neutral=neutral,
             historical_consistency=dominant_direction,
             sample_count=len(values),
             standard_error=(pstdev(values) / sqrt(len(values))) if len(values) > 1 else None,

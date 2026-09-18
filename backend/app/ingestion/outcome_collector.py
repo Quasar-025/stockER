@@ -82,16 +82,12 @@ class HistoricalOutcomeCollector:
             try:
                 event_id = event["id"]
                 event_date_str = event["event_date"]
-                event_date = datetime.strptime(event_date_str, "%Y-%m-%d").replace(
-                    tzinfo=UTC
-                )
+                event_date = datetime.strptime(event_date_str, "%Y-%m-%d").replace(tzinfo=UTC)
                 category = event["category"]
                 title = event["title"]
 
                 # Resolve tickers and sector for this category
-                tickers, sector = CATEGORY_TICKER_MAP.get(
-                    category, (["SPY"], "Technology")
-                )
+                tickers, sector = CATEGORY_TICKER_MAP.get(category, (["SPY"], "Technology"))
 
                 # Download price data (event_date - 90d to event_date + 120d)
                 data_start = (event_date - timedelta(days=120)).date()
@@ -151,8 +147,11 @@ class HistoricalOutcomeCollector:
                     sector_c = close_data.get(sector_etf, {}) if sector_etf else {}
 
                     outcome = self._compute_outcome(
-                        ticker_closes, spy_c, sector_c,
-                        event_date.date(), canonical_id,
+                        ticker_closes,
+                        spy_c,
+                        sector_c,
+                        event_date.date(),
+                        canonical_id,
                         ticker,
                     )
                     if outcome:
@@ -165,9 +164,7 @@ class HistoricalOutcomeCollector:
                     "outcomes": outcomes_created,
                     "regime": regime,
                 }
-                logger.info(
-                    f"Processed {event_id}: {title} → {outcomes_created} outcomes"
-                )
+                logger.info(f"Processed {event_id}: {title} → {outcomes_created} outcomes")
 
             except Exception as e:
                 logger.error(f"Error processing event {event.get('id', '?')}: {e}")
@@ -315,9 +312,7 @@ class HistoricalOutcomeCollector:
             return None
         return post_vol / pre_vol
 
-    def _compute_recovery_days(
-        self, closes: dict[date, float], event_date: date
-    ) -> int | None:
+    def _compute_recovery_days(self, closes: dict[date, float], event_date: date) -> int | None:
         """Days until close ≥ pre-event close after a decline."""
         pre_close = self._get_value_at_date(closes, event_date)
         if pre_close is None:
@@ -363,19 +358,22 @@ class HistoricalOutcomeCollector:
                 bootstrap_status = EXCLUDED.bootstrap_status
         """)
 
-        await self.session.execute(stmt, {
-            "id": canonical_id,
-            "title": title,
-            "description": title,
-            "category": category,
-            "event_date": event_date,
-            "regime": regime,
-            "vix": vix,
-            "tickers": json.dumps(tickers),
-            "sectors": json.dumps([sector]),
-            "source": "landmark_events.json",
-            "status": "outcomes_computed",
-        })
+        await self.session.execute(
+            stmt,
+            {
+                "id": canonical_id,
+                "title": title,
+                "description": title,
+                "category": category,
+                "event_date": event_date,
+                "regime": regime,
+                "vix": vix,
+                "tickers": json.dumps(tickers),
+                "sectors": json.dumps([sector]),
+                "source": "landmark_events.json",
+                "status": "outcomes_computed",
+            },
+        )
         await self.session.commit()
         return canonical_id
 

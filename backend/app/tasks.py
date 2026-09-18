@@ -34,11 +34,7 @@ def fetch_latest_sec_filings(self: Any, ticker: str = "AAPL") -> dict[str, Any]:
                 producer.produce(
                     topic="raw_events",
                     key=f"sec_{ticker}_{filing['updated']}",
-                    value={
-                        "source": "sec_edgar",
-                        "ticker": ticker,
-                        "data": filing
-                    }
+                    value={"source": "sec_edgar", "ticker": ticker, "data": filing},
                 )
 
             producer.flush()
@@ -69,11 +65,7 @@ def fetch_macro_indicators(self: Any) -> dict[str, Any]:
                 producer.produce(
                     topic="raw_events",
                     key=f"fred_{ind}",
-                    value={
-                        "source": "fred",
-                        "indicator": ind,
-                        "data": observations
-                    }
+                    value={"source": "fred", "indicator": ind, "data": observations},
                 )
 
             producer.flush()
@@ -107,6 +99,7 @@ def daily_price_update(self: Any) -> dict[str, Any]:
 
             # Fetch last 3 days to ensure no gaps
             from datetime import date, timedelta
+
             start_date = date.today() - timedelta(days=3)
 
             results = await backfill.backfill(tickers, start=start_date)
@@ -137,6 +130,7 @@ def scheduled_news_ingestion(self: Any) -> dict[str, Any]:
             # Try to set up Qdrant
             try:
                 from app.vectors.store import QdrantEventStore
+
                 pipeline.qdrant_store = QdrantEventStore()
             except Exception:
                 pass

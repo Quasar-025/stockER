@@ -27,7 +27,9 @@ class FREDClient:
             timeout=15.0,
         )
 
-    async def get_series_observations(self, series_id: str, limit: int = 100) -> list[dict[str, Any]]:
+    async def get_series_observations(
+        self, series_id: str, limit: int = 100
+    ) -> list[dict[str, Any]]:
         """Fetch observations (data points) for an economic series.
 
         Common Series IDs:
@@ -46,7 +48,7 @@ class FREDClient:
                     "file_type": "json",
                     "limit": limit,
                     "sort_order": "desc",
-                }
+                },
             )
             response.raise_for_status()
 

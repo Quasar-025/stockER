@@ -139,12 +139,21 @@ class PropagationEngine:
             )
             for horizon in horizons:
                 impact = self._impact_from_returns(
-                    ticker=ticker, returns=[item.residual_return for item in observations],
+                    ticker=ticker,
+                    returns=[item.residual_return for item in observations],
                     event_ids=[item.event_id for item in observations],
-                    quality=[item.data_quality for item in observations], current_regime=current_regime,
-                    horizon=horizon, depth=1, context=context, paths=[], edge_confidence=1.0,
-                    estimation_method="historical_direct_outcomes" if observations else "insufficient_data",
-                    calibration_window=self._direct_window(observations), is_prior=not observations,
+                    quality=[item.data_quality for item in observations],
+                    current_regime=current_regime,
+                    horizon=horizon,
+                    depth=1,
+                    context=context,
+                    paths=[],
+                    edge_confidence=1.0,
+                    estimation_method="historical_direct_outcomes"
+                    if observations
+                    else "insufficient_data",
+                    calibration_window=self._direct_window(observations),
+                    is_prior=not observations,
                 )
                 direct_impacts.append(impact)
                 evidence_count += len(observations)
@@ -152,17 +161,22 @@ class PropagationEngine:
                     flags.append(f"{ticker} at {horizon}d: insufficient historical evidence")
 
         paths = self.graph.traverse(
-            roots, max_depth=max_depth, as_of=as_of,
+            roots,
+            max_depth=max_depth,
+            as_of=as_of,
             allow_temporal_approximation=allow_temporal_approximation,
         )
         for edges, depth in paths:
             edge = edges[-1]
             calibration = self.edge_calibrator.estimate(
                 self.edge_observations,
-                source_entity=edge.source_entity, target_entity=edge.target_entity,
+                source_entity=edge.source_entity,
+                target_entity=edge.target_entity,
                 event_magnitude=event.estimated_disruption_magnitude,
-                event_duration_days=event.estimated_duration_days, market_regime=current_regime,
-                as_of=as_of, include_seeded_demo=include_seeded_demo,
+                event_duration_days=event.estimated_duration_days,
+                market_regime=current_regime,
+                as_of=as_of,
+                include_seeded_demo=include_seeded_demo,
             )
             # Structural attenuation controls repeated propagation magnitude but
             # has no sign; the historical residuals determine sign/outcome.
@@ -171,7 +185,8 @@ class PropagationEngine:
             path = PropagationPath(
                 entities=[edges[0].source_entity, *[item.target_entity for item in edges]],
                 relationship_types=[item.relationship_type.value for item in edges],
-                channel_types=[item.channel_type.value for item in edges], propagation_depth=depth,
+                channel_types=[item.channel_type.value for item in edges],
+                propagation_depth=depth,
                 cumulative_lag_days=sum(item.typical_time_lag_days for item in edges),
                 edge_confidence=min(item.confidence for item in edges),
                 evidence_sources=[source for item in edges for source in item.evidence_sources],
@@ -181,11 +196,21 @@ class PropagationEngine:
                 if horizon < path.cumulative_lag_days:
                     continue
                 impact = self._impact_from_returns(
-                    ticker=edge.target_entity, returns=residuals,
-                    event_ids=[item.observation.event_id for item in calibration.comparable_observations],
-                    quality=[item.observation.data_quality for item in calibration.comparable_observations],
-                    current_regime=current_regime, horizon=horizon, depth=depth, context=context,
-                    paths=[path], edge_confidence=path.edge_confidence,
+                    ticker=edge.target_entity,
+                    returns=residuals,
+                    event_ids=[
+                        item.observation.event_id for item in calibration.comparable_observations
+                    ],
+                    quality=[
+                        item.observation.data_quality
+                        for item in calibration.comparable_observations
+                    ],
+                    current_regime=current_regime,
+                    horizon=horizon,
+                    depth=depth,
+                    context=context,
+                    paths=[path],
+                    edge_confidence=path.edge_confidence,
                     estimation_method=calibration.metadata.estimation_method.value,
                     calibration_window=calibration.metadata.estimation_window,
                     is_prior=calibration.metadata.is_prior,
@@ -202,7 +227,9 @@ class PropagationEngine:
                 else:
                     tertiary_impacts.append(impact)
                 if impact.insufficient_historical_evidence:
-                    flags.append(f"{edge.target_entity} at depth {depth}, {horizon}d: insufficient historical evidence")
+                    flags.append(
+                        f"{edge.target_entity} at depth {depth}, {horizon}d: insufficient historical evidence"
+                    )
 
         coverage = self.graph.coverage(roots)
         limitations = list(coverage.limitations)
@@ -211,32 +238,52 @@ class PropagationEngine:
         if not context.provider_statuses:
             limitations.append("No live provider quality records were supplied to this forecast.")
         if not allow_temporal_approximation:
-            limitations.append("Temporal-approximation graph edges were excluded from this forecast.")
+            limitations.append(
+                "Temporal-approximation graph edges were excluded from this forecast."
+            )
         return ProbabilisticForecast(
             event=EventSummary(
-                title=event.title, category=event.category.value, event_date=event.event_date or event.published_at,
+                title=event.title,
+                category=event.category.value,
+                event_date=event.event_date or event.published_at,
                 estimated_disruption_magnitude=event.estimated_disruption_magnitude,
-                estimated_duration_days=event.estimated_duration_days, affected_tickers=roots,
+                estimated_duration_days=event.estimated_duration_days,
+                affected_tickers=roots,
             ),
-            current_regime=current_regime, primary_impacts=direct_impacts,
-            secondary_impacts=secondary_impacts, tertiary_impacts=tertiary_impacts,
+            current_regime=current_regime,
+            primary_impacts=direct_impacts,
+            secondary_impacts=secondary_impacts,
+            tertiary_impacts=tertiary_impacts,
             potential_beneficiaries=beneficiaries,
             historical_evidence=HistoricalEvidenceSummary(
-                comparable_event_count=len({item.event_id for item in self.direct_observations} | {item.event_id for item in self.edge_observations}),
-                observation_count=evidence_count, includes_seeded_demo_data=include_seeded_demo,
+                comparable_event_count=len(
+                    {item.event_id for item in self.direct_observations}
+                    | {item.event_id for item in self.edge_observations}
+                ),
+                observation_count=evidence_count,
+                includes_seeded_demo_data=include_seeded_demo,
                 caveat="Historical sample counts are exposed; bootstrap metadata is not empirical calibration data.",
             ),
             uncertainty_sources=sorted(set(flag.split(": ", 1)[-1] for flag in flags)),
             data_quality=DataQualitySummary(
-                provider_statuses=context.provider_statuses, source_quality_score=context.source_quality_score,
-                limitations=[] if context.provider_statuses else ["Provider quality metadata unavailable."],
+                provider_statuses=context.provider_statuses,
+                source_quality_score=context.source_quality_score,
+                limitations=[]
+                if context.provider_statuses
+                else ["Provider quality metadata unavailable."],
             ),
-            graph_coverage=coverage, limitations=limitations,
+            graph_coverage=coverage,
+            limitations=limitations,
             insufficient_evidence_flags=sorted(set(flags)),
         )
 
     def _direct_comparable(
-        self, ticker: str, event: EventOntologySchema, regime: MarketRegime, as_of: datetime, include_seeded_demo: bool
+        self,
+        ticker: str,
+        event: EventOntologySchema,
+        regime: MarketRegime,
+        as_of: datetime,
+        include_seeded_demo: bool,
     ) -> list[DirectEventObservation]:
         matches: list[DirectEventObservation] = []
         for observation in self.direct_observations:
@@ -244,10 +291,16 @@ class PropagationEngine:
                 continue
             if observation.is_seeded_demo and not include_seeded_demo:
                 continue
-            magnitude = self.edge_calibrator._proximity(event.estimated_disruption_magnitude, observation.event_magnitude)
+            magnitude = self.edge_calibrator._proximity(
+                event.estimated_disruption_magnitude, observation.event_magnitude
+            )
             duration = self.edge_calibrator._proximity(
-                float(event.estimated_duration_days) if event.estimated_duration_days is not None else None,
-                float(observation.event_duration_days) if observation.event_duration_days is not None else None,
+                float(event.estimated_duration_days)
+                if event.estimated_duration_days is not None
+                else None,
+                float(observation.event_duration_days)
+                if observation.event_duration_days is not None
+                else None,
             )
             regime_score = 1.0 if observation.market_regime == regime else 0.35
             if (magnitude + duration + regime_score) / 3 >= 0.25:
@@ -276,58 +329,101 @@ class PropagationEngine:
         evidence = EmpiricalImpactDistribution.from_returns(returns)
         market = context.market(horizon)
         sector = context.sector(horizon)
-        adjusted_returns = [value + market.expected_return + sector.expected_return for value in returns]
+        adjusted_returns = [
+            value + market.expected_return + sector.expected_return for value in returns
+        ]
         net = EmpiricalImpactDistribution.from_returns(adjusted_returns)
         if not returns:
             # No residual evidence: common-factor estimates are still separated,
             # but cannot turn an unknown causal channel into certainty.
             net = EmpiricalImpactDistribution.from_returns([])
         uncertainty = min(1.0, (standard_error or evidence.standard_error or 0.05) / 0.05)
-        reliability = self.reliability_calibrator.estimate(ReliabilityInputs(
-            sample_count=evidence.sample_count, consistency=evidence.historical_consistency,
-            similarity_quality=0.5 if is_prior else 0.75,
-            data_quality=sum(quality) / len(quality) if quality else 0.0,
-            edge_confidence=edge_confidence, model_uncertainty=uncertainty,
-        ))
+        reliability = self.reliability_calibrator.estimate(
+            ReliabilityInputs(
+                sample_count=evidence.sample_count,
+                consistency=evidence.historical_consistency,
+                similarity_quality=0.5 if is_prior else 0.75,
+                data_quality=sum(quality) / len(quality) if quality else 0.0,
+                edge_confidence=edge_confidence,
+                model_uncertainty=uncertainty,
+            )
+        )
         direction, direction_probability = self._direction(net, evidence.sample_count, is_prior)
         insufficient = (
-            is_prior or evidence.sample_count <= 5 or not reliability.is_calibrated
+            is_prior
+            or evidence.sample_count <= 5
+            or not reliability.is_calibrated
             or reliability.value < self.min_confidence
         )
         direct_channel = self._channel(
             "competitive/substitution" if competitive else "direct event",
-            evidence.mean_return, direction_probability, reliability.value, evidence.sample_count,
-            estimation_method, is_prior,
+            evidence.mean_return,
+            direction_probability,
+            reliability.value,
+            evidence.sample_count,
+            estimation_method,
+            is_prior,
         )
         zero_channel = self._channel(
-            "direct event" if competitive else "competitive/substitution", 0.0, 0.5, 0.0, 0,
-            "not_applicable", True,
+            "direct event" if competitive else "competitive/substitution",
+            0.0,
+            0.5,
+            0.0,
+            0,
+            "not_applicable",
+            True,
         )
         direct = zero_channel if competitive else direct_channel
         competition = direct_channel if competitive else zero_channel
         market_channel = EffectChannel(
-            channel_name="market", estimated_effect=market.expected_return, probability=market.probability,
-            confidence=market.confidence, sample_count=market.sample_count,
-            estimation_method=market.estimation_method, evidence_summary="Observed market factor estimate." if not market.is_prior else "Market factor unavailable.",
+            channel_name="market",
+            estimated_effect=market.expected_return,
+            probability=market.probability,
+            confidence=market.confidence,
+            sample_count=market.sample_count,
+            estimation_method=market.estimation_method,
+            evidence_summary="Observed market factor estimate."
+            if not market.is_prior
+            else "Market factor unavailable.",
             is_prior=market.is_prior,
         )
         sector_channel = EffectChannel(
-            channel_name="sector", estimated_effect=sector.expected_return, probability=sector.probability,
-            confidence=sector.confidence, sample_count=sector.sample_count,
-            estimation_method=sector.estimation_method, evidence_summary="Observed sector excess-return estimate." if not sector.is_prior else "Sector factor unavailable.",
+            channel_name="sector",
+            estimated_effect=sector.expected_return,
+            probability=sector.probability,
+            confidence=sector.confidence,
+            sample_count=sector.sample_count,
+            estimation_method=sector.estimation_method,
+            evidence_summary="Observed sector excess-return estimate."
+            if not sector.is_prior
+            else "Sector factor unavailable.",
             is_prior=sector.is_prior,
         )
         residual_channel = EffectChannel(
-            channel_name="residual/other", estimated_effect=0.0, probability=0.5, confidence=0.0,
-            sample_count=0, estimation_method="not_identified", evidence_summary="Residual channel is not assumed away.", is_prior=True,
+            channel_name="residual/other",
+            estimated_effect=0.0,
+            probability=0.5,
+            confidence=0.0,
+            sample_count=0,
+            estimation_method="not_identified",
+            evidence_summary="Residual channel is not assumed away.",
+            is_prior=True,
         )
         decomposition = EffectDecomposition.combine(
-            direct_event_effect=direct, sector_effect=sector_channel, market_effect=market_channel,
-            competitive_substitution_effect=competition, residual_effect=residual_channel,
-            net_direction_probability=direction_probability, model_confidence=reliability.value,
+            direct_event_effect=direct,
+            sector_effect=sector_channel,
+            market_effect=market_channel,
+            competitive_substitution_effect=competition,
+            residual_effect=residual_channel,
+            net_direction_probability=direction_probability,
+            model_confidence=reliability.value,
         )
         contradicting = [
-            ContradictingEvent(event_id=event_id, observed_return=value, reason="Observed residual had the opposite sign.")
+            ContradictingEvent(
+                event_id=event_id,
+                observed_return=value,
+                reason="Observed residual had the opposite sign.",
+            )
             for event_id, value in zip(event_ids, returns, strict=False)
             if evidence.mean_return and value * evidence.mean_return < 0
         ]
@@ -339,31 +435,53 @@ class PropagationEngine:
         if not reliability.is_calibrated:
             flags.append(reliability.reason)
         return EntityImpact(
-            ticker=ticker, direction=ForecastDirection.UNCERTAIN if insufficient else direction,
-            direction_probability=direction_probability, model_confidence=reliability.value,
+            ticker=ticker,
+            direction=ForecastDirection.UNCERTAIN if insufficient else direction,
+            direction_probability=direction_probability,
+            model_confidence=reliability.value,
             confidence_is_calibrated=reliability.is_calibrated,
             expected_return=decomposition.net_expected_return,
-            return_range=(net.quantiles.p25, net.quantiles.p75), return_p50=net.quantiles.p50,
-            time_horizon_days=horizon, propagation_depth=depth, effect_decomposition=decomposition,
+            return_range=(net.quantiles.p25, net.quantiles.p75),
+            return_p50=net.quantiles.p50,
+            time_horizon_days=horizon,
+            propagation_depth=depth,
+            effect_decomposition=decomposition,
             causal_paths=paths,
             historical_support=HistoricalSupport(
-                sample_count=evidence.sample_count, supporting_event_ids=event_ids,
-                estimation_method=estimation_method, is_prior=is_prior, calibration_window=calibration_window,
+                sample_count=evidence.sample_count,
+                supporting_event_ids=event_ids,
+                estimation_method=estimation_method,
+                is_prior=is_prior,
+                calibration_window=calibration_window,
                 standard_error=standard_error or evidence.standard_error,
             ),
-            contradicting_evidence=contradicting, insufficient_historical_evidence=insufficient,
+            contradicting_evidence=contradicting,
+            insufficient_historical_evidence=insufficient,
             uncertainty_sources=flags,
         )
 
     @staticmethod
     def _channel(
-        name: str, effect: float, probability: float, confidence: float, sample_count: int,
-        method: str, is_prior: bool,
+        name: str,
+        effect: float,
+        probability: float,
+        confidence: float,
+        sample_count: int,
+        method: str,
+        is_prior: bool,
     ) -> EffectChannel:
         return EffectChannel(
-            channel_name=name, estimated_effect=effect, probability=probability, confidence=confidence,
-            sample_count=sample_count, estimation_method=method,
-            evidence_summary=("Direction-neutral cold-start prior." if is_prior else f"Estimated from {sample_count} comparable observations."),
+            channel_name=name,
+            estimated_effect=effect,
+            probability=probability,
+            confidence=confidence,
+            sample_count=sample_count,
+            estimation_method=method,
+            evidence_summary=(
+                "Direction-neutral cold-start prior."
+                if is_prior
+                else f"Estimated from {sample_count} comparable observations."
+            ),
             is_prior=is_prior,
         )
 
@@ -372,7 +490,9 @@ class PropagationEngine:
         distribution: EmpiricalImpactDistribution, sample_count: int, is_prior: bool
     ) -> tuple[ForecastDirection, float]:
         if is_prior or sample_count == 0:
-            return ForecastDirection.UNCERTAIN, max(distribution.probability_positive, distribution.probability_negative)
+            return ForecastDirection.UNCERTAIN, max(
+                distribution.probability_positive, distribution.probability_negative
+            )
         options = {
             ForecastDirection.BULLISH: distribution.probability_positive,
             ForecastDirection.BEARISH: distribution.probability_negative,

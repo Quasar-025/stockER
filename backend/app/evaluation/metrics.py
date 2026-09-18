@@ -60,25 +60,39 @@ def calculate_metrics(records: list[PredictionRecord]) -> MetricSummary:
     ]
     errors = [record.predicted_return - record.actual_return for record in records]
     brier_terms = [
-        (record.predicted_positive_probability - float(record.actual_return >= 0)) ** 2 for record in records
+        (record.predicted_positive_probability - float(record.actual_return >= 0)) ** 2
+        for record in records
     ]
     calibration = _calibration_error(records)
-    covered = [record.return_range[0] <= record.actual_return <= record.return_range[1] for record in records]
+    covered = [
+        record.return_range[0] <= record.actual_return <= record.return_range[1]
+        for record in records
+    ]
     widths = [record.return_range[1] - record.return_range[0] for record in records]
     tp = sum(record.entity_identified and record.actual_entity_affected for record in records)
     fp = sum(record.entity_identified and not record.actual_entity_affected for record in records)
     fn = sum(not record.entity_identified and record.actual_entity_affected for record in records)
     precision = tp / (tp + fp) if tp + fp else None
     recall = tp / (tp + fn) if tp + fn else None
-    f1 = 2 * precision * recall / (precision + recall) if precision is not None and recall is not None and precision + recall else None
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision is not None and recall is not None and precision + recall
+        else None
+    )
     return MetricSummary(
-        sample_count=len(records), directional_accuracy=sum(direction_correct) / len(records),
+        sample_count=len(records),
+        directional_accuracy=sum(direction_correct) / len(records),
         mae=sum(abs(error) for error in errors) / len(errors),
         rmse=sqrt(sum(error**2 for error in errors) / len(errors)),
-        brier_score=sum(brier_terms) / len(brier_terms), calibration_error=calibration,
-        precision=precision, recall=recall, f1=f1,
-        prediction_interval_coverage=sum(covered) / len(covered), average_interval_width=sum(widths) / len(widths),
-        propagation_precision=precision, propagation_recall=recall,
+        brier_score=sum(brier_terms) / len(brier_terms),
+        calibration_error=calibration,
+        precision=precision,
+        recall=recall,
+        f1=f1,
+        prediction_interval_coverage=sum(covered) / len(covered),
+        average_interval_width=sum(widths) / len(widths),
+        propagation_precision=precision,
+        propagation_recall=recall,
     )
 
 
@@ -97,9 +111,11 @@ def _calibration_error(records: list[PredictionRecord]) -> float:
         bucket = min(9, int(record.predicted_positive_probability * 10))
         bins.setdefault(bucket, []).append(record)
     return sum(
-        len(bucket_records) / len(records)
+        len(bucket_records)
+        / len(records)
         * abs(
-            sum(record.predicted_positive_probability for record in bucket_records) / len(bucket_records)
+            sum(record.predicted_positive_probability for record in bucket_records)
+            / len(bucket_records)
             - sum(record.actual_return >= 0 for record in bucket_records) / len(bucket_records)
         )
         for bucket_records in bins.values()

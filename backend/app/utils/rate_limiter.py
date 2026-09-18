@@ -54,9 +54,7 @@ class RateLimiter:
             # Check per-day limit
             if config.calls_per_day is not None:
                 day_ago = now - 86400
-                self._day_calls[api_name] = [
-                    t for t in self._day_calls[api_name] if t > day_ago
-                ]
+                self._day_calls[api_name] = [t for t in self._day_calls[api_name] if t > day_ago]
                 if len(self._day_calls[api_name]) >= config.calls_per_day:
                     raise RuntimeError(
                         f"Daily rate limit exceeded for {api_name} "

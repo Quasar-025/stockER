@@ -45,15 +45,21 @@ class EffectDecomposition(BaseModel):
         model_confidence: float,
     ) -> "EffectDecomposition":
         channels = (
-            direct_event_effect, sector_effect, market_effect,
-            competitive_substitution_effect, residual_effect,
+            direct_event_effect,
+            sector_effect,
+            market_effect,
+            competitive_substitution_effect,
+            residual_effect,
         )
         return cls(
-            direct_event_effect=direct_event_effect, sector_effect=sector_effect,
-            market_effect=market_effect, competitive_substitution_effect=competitive_substitution_effect,
+            direct_event_effect=direct_event_effect,
+            sector_effect=sector_effect,
+            market_effect=market_effect,
+            competitive_substitution_effect=competitive_substitution_effect,
             residual_effect=residual_effect,
             net_expected_return=sum(channel.estimated_effect for channel in channels),
-            net_direction_probability=net_direction_probability, model_confidence=model_confidence,
+            net_direction_probability=net_direction_probability,
+            model_confidence=model_confidence,
         )
 
 
@@ -72,8 +78,16 @@ class ReliabilityInputs:
         """A bounded additive score, intentionally not a product of scores."""
 
         sample_score = min(log1p(max(self.sample_count, 0)) / log1p(30), 1.0)
-        values = (self.consistency, self.similarity_quality, self.data_quality, self.edge_confidence)
-        if any(not 0.0 <= value <= 1.0 for value in values) or not 0.0 <= self.model_uncertainty <= 1.0:
+        values = (
+            self.consistency,
+            self.similarity_quality,
+            self.data_quality,
+            self.edge_confidence,
+        )
+        if (
+            any(not 0.0 <= value <= 1.0 for value in values)
+            or not 0.0 <= self.model_uncertainty <= 1.0
+        ):
             raise ValueError("Reliability inputs must be bounded in [0, 1]")
         # Coefficients are interpretable feature weights, not probabilistic
         # transmission constants.  Held-out outcome data calibrates this score.
@@ -114,7 +128,9 @@ class ReliabilityCalibrator:
     flagged instead of presented as broadly reliable.
     """
 
-    def __init__(self, records: Iterable[ReliabilityValidationRecord] = (), min_calibration_samples: int = 10) -> None:
+    def __init__(
+        self, records: Iterable[ReliabilityValidationRecord] = (), min_calibration_samples: int = 10
+    ) -> None:
         self.records = tuple(records)
         self.min_calibration_samples = min_calibration_samples
 
@@ -122,7 +138,8 @@ class ReliabilityCalibrator:
         score = inputs.feature_score()
         if len(self.records) < self.min_calibration_samples:
             return ReliabilityEstimate(
-                value=round(min(0.25, 0.05 + 0.25 * score), 4), is_calibrated=False,
+                value=round(min(0.25, 0.05 + 0.25 * score), 4),
+                is_calibrated=False,
                 calibration_sample_count=len(self.records),
                 reason="Insufficient held-out outcomes to calibrate reliability.",
             )
@@ -134,8 +151,10 @@ class ReliabilityCalibrator:
         # Beta(1,1) smoothed empirical accuracy avoids certainty from a tiny bin.
         calibrated = (successes + 1) / (len(matching) + 2)
         return ReliabilityEstimate(
-            value=round(calibrated, 4), is_calibrated=True,
-            calibration_sample_count=len(self.records), reason="Held-out outcome calibration.",
+            value=round(calibrated, 4),
+            is_calibrated=True,
+            calibration_sample_count=len(self.records),
+            reason="Held-out outcome calibration.",
         )
 
     @staticmethod

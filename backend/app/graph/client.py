@@ -19,6 +19,7 @@ class Neo4jGraphClient:
     async def connect(self) -> None:
         if self._driver is None:
             from neo4j import AsyncGraphDatabase
+
             self._driver = AsyncGraphDatabase.driver(self.uri, auth=(self.user, self.password))
 
     async def close(self) -> None:
@@ -35,7 +36,9 @@ class Neo4jGraphClient:
         except Exception:
             return False
 
-    async def run(self, query: str, parameters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    async def run(
+        self, query: str, parameters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         await self.connect()
         assert self._driver is not None
         async with self._driver.session() as session:
