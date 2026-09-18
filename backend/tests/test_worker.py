@@ -1,7 +1,6 @@
 """Tests for Celery worker tasks."""
 
-import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 @patch("app.tasks.EventProducer")

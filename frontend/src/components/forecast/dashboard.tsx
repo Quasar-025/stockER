@@ -6,7 +6,7 @@ import { ForecastResponse } from "@/lib/api";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
 
-export function ForecastCard({ impact }: { impact: any }) {
+export function ForecastCard({ impact }: { impact: Record<string, unknown> }) {
   const prob = impact.direction_probability ?? 50;
   const conf = impact.model_confidence ?? 5;
   const samples = impact.sample_count || 0;
@@ -25,7 +25,7 @@ export function ForecastCard({ impact }: { impact: any }) {
   );
 }
 
-export function EffectDecompositionPanel({ impact }: { impact: any }) {
+export function EffectDecompositionPanel({ impact }: { impact: Record<string, unknown> }) {
   if (!impact) return null;
   const decomp = impact.decomposition;
   
@@ -58,7 +58,7 @@ export function EffectDecompositionPanel({ impact }: { impact: any }) {
   );
 }
 
-export function EntityImpactTable({ impacts }: { impacts: any[] }) { 
+export function EntityImpactTable({ impacts }: { impacts: Record<string, unknown>[] }) { 
   return (
     <section className="panel">
       <h2>Entity impact ledger</h2>
@@ -88,7 +88,7 @@ export function EntityImpactTable({ impacts }: { impacts: any[] }) {
   ); 
 }
 
-export function EvidencePanel({ similarEvents, explanation }: { similarEvents: any[], explanation?: string }) { 
+export function EvidencePanel({ similarEvents, explanation }: { similarEvents: Record<string, unknown>[], explanation?: string }) { 
   return (
     <section className="panel">
       <h2>Historical evidence & Explanation</h2>
@@ -119,10 +119,27 @@ export function DataHealthStatus({ sampleSize }: { sampleSize: number }) {
   ); 
 }
 
-export function CausalGraphPanel({ causalPaths, event, impacts }: { causalPaths?: any[], event: any, impacts: any[] }) {
+// Graph Interfaces
+interface GraphNode {
+  id: string;
+  name: string;
+  color: string;
+  val: number;
+  x?: number;
+  y?: number;
+  __bckgDimensions?: number[];
+}
+
+interface GraphLink {
+  source: string;
+  target: string;
+  name: string;
+}
+
+export function CausalGraphPanel({ causalPaths, event, impacts }: { causalPaths?: Record<string, unknown>[], event: Record<string, unknown>, impacts: Record<string, unknown>[] }) {
   const graphData = useMemo(() => {
-    const nodes = new Map<string, any>();
-    const links: any[] = [];
+    const nodes = new Map<string, GraphNode>();
+    const links: GraphLink[] = [];
 
     if (!causalPaths || causalPaths.length === 0) {
       // Fallback: build a star graph from the event to the affected tickers
@@ -176,10 +193,11 @@ export function CausalGraphPanel({ causalPaths, event, impacts }: { causalPaths?
           width={800}
           height={350}
           nodeLabel="name"
-          nodeColor={(node: any) => node.color || "#00ffcc"}
-          nodeVal={(node: any) => node.val || 1}
-          nodeCanvasObject={(node: any, ctx, globalScale) => {
-            const label = node.name;
+          nodeColor={(node: object) => (node as GraphNode).color || "#00ffcc"}
+          nodeVal={(node: object) => (node as GraphNode).val || 1}
+          nodeCanvasObject={(node: object, ctx, globalScale) => {
+            const graphNode = node as GraphNode;
+            const label = graphNode.name;
             const fontSize = 12 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             const textWidth = ctx.measureText(label).width;
@@ -190,15 +208,20 @@ export function CausalGraphPanel({ causalPaths, event, impacts }: { causalPaths?
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = node.color || '#00ffcc';
-            ctx.fillText(label, node.x, node.y);
+            ctx.fillStyle = graphNode.color || '#00ffcc';
+            if (graphNode.x !== undefined && graphNode.y !== undefined) {
+              ctx.fillText(label, graphNode.x, graphNode.y);
+            }
 
-            node.__bckgDimensions = bckgDimensions;
+            graphNode.__bckgDimensions = bckgDimensions;
           }}
-          nodePointerAreaPaint={(node: any, color, ctx) => {
+          nodePointerAreaPaint={(node: object, color, ctx) => {
+            const graphNode = node as GraphNode;
             ctx.fillStyle = color;
-            const bckgDimensions = node.__bckgDimensions;
-            bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+            const bckgDimensions = graphNode.__bckgDimensions;
+            if (bckgDimensions && graphNode.x !== undefined && graphNode.y !== undefined) {
+              ctx.fillRect(graphNode.x - bckgDimensions[0] / 2, graphNode.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+            }
           }}
           linkColor={() => "#555"}
           linkDirectionalArrowLength={3.5}
@@ -213,7 +236,7 @@ export function CausalGraphPanel({ causalPaths, event, impacts }: { causalPaths?
   );
 }
 
-export function Dashboard({ data }: { data?: any | null }) { 
+export function Dashboard({ data }: { data?: Record<string, unknown> | null }) { 
   if (!data) return null;
   
   const impacts = data.forecasts || data.impact_forecasts || [];
@@ -223,8 +246,8 @@ export function Dashboard({ data }: { data?: any | null }) {
   return (
     <>
       <section className="cards">
-        {impacts.slice(0, 4).map((impact: any, i: number) => (
-          <ForecastCard impact={impact} key={`${impact.ticker}-${i}`} />
+        {impacts.slice(0, 4).map((impact: Record<string, unknown>, i: number) => (
+          <ForecastCard impact={impact} key={`${impact.ticker as string}-${i}`} />
         ))}
       </section>
       

@@ -1,13 +1,14 @@
 """Tests for Event Ontology schema."""
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from app.intelligence.ontology import (
-    EventCategory,
-    SeverityLevel,
-    EventOntologySchema,
     CATEGORY_SCOPE,
+    EventCategory,
+    EventOntologySchema,
+    SeverityLevel,
 )
 
 
@@ -63,7 +64,7 @@ class TestEventOntologySchema:
             "title": "Fed raises rates by 25 bps",
             "description": "The Federal Reserve raised interest rates...",
             "source_url": "https://example.com/fed-rate-hike",
-            "published_at": datetime(2024, 3, 20, 14, 0, tzinfo=timezone.utc),
+            "published_at": datetime(2024, 3, 20, 14, 0, tzinfo=UTC),
             "category": EventCategory.INTEREST_RATE_CHANGE,
             "severity_score": 0.75,
             "affected_tickers": ["SPY", "QQQ"],

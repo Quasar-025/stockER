@@ -11,8 +11,9 @@ will be added when we have sufficient historical data in the database.
 """
 
 import logging
-from enum import StrEnum
 from dataclasses import dataclass
+from enum import StrEnum
+
 import numpy as np
 
 logger = logging.getLogger(__name__)

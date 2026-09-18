@@ -1,8 +1,9 @@
 """Tests for the FRED client."""
 
-import pytest
+from unittest.mock import AsyncMock, patch
+
 import httpx
-from unittest.mock import patch, AsyncMock
+import pytest
 
 from app.ingestion.fred import FREDClient
 

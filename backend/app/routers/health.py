@@ -1,7 +1,7 @@
 """System health endpoint — checks database, Qdrant, Neo4j, Redis connectivity."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
@@ -15,17 +15,17 @@ router = APIRouter(prefix="/api/health", tags=["health"])
 
 
 @router.get("")
-async def health_check(db: AsyncSession = Depends(get_db)):
+async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
     """Check overall system health and component connectivity."""
     status = {
         "status": "ok",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "components": {},
     }
 
     # PostgreSQL / TimescaleDB
     try:
-        result = await db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))
         status["components"]["database"] = {"status": "healthy"}
     except Exception as e:
         status["components"]["database"] = {"status": "unhealthy", "error": str(e)}
@@ -70,7 +70,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/sources")
-async def data_source_status(db: AsyncSession = Depends(get_db)):
+async def data_source_status(db: AsyncSession = Depends(get_db)):  # noqa: B008
     """Return data source freshness and counts."""
     sources = {}
 

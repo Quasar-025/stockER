@@ -10,7 +10,6 @@ deterministic and reproducible by design.
 """
 
 import logging
-import re
 from typing import Any
 
 from app.intelligence.ontology import EventCategory

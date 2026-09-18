@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from math import sqrt
 
-
 DEPTH_BUCKETS: tuple[int | str, ...] = (1, 2, 3, "4+")
 
 

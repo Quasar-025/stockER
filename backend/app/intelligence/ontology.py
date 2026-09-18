@@ -7,8 +7,9 @@ uses them for dimension weighting.
 """
 
 import uuid
-from enum import StrEnum
 from datetime import datetime
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 

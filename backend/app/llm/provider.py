@@ -6,7 +6,6 @@ objects in natural language. It never decides anything about the prediction.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
 
 from app.config import settings
 

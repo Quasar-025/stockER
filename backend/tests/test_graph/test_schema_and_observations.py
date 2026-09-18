@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-import pytest
-
-from app.graph.historical_observations import CausalRelationshipObservation, HistoricalEdgeCalibrator
+from app.graph.historical_observations import (
+    CausalRelationshipObservation,
+    HistoricalEdgeCalibrator,
+)
 from app.graph.queries import InMemoryCausalGraph, filter_edges_point_in_time
 from app.graph.schema import ChannelType, RelationshipType
 from app.graph.seed import semiconductor_seed_edges
@@ -37,7 +38,7 @@ def test_point_in_time_excludes_temporal_approximations_by_default() -> None:
 
 
 def test_coefficient_is_learned_only_from_sufficient_observations() -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     observations = [
         CausalRelationshipObservation(
             event_id=str(index), event_date=now - timedelta(days=100 - index), available_at=now - timedelta(days=50),

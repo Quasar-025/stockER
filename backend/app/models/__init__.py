@@ -1,7 +1,6 @@
 """Export all models so Alembic can autogenerate migrations."""
 
-from app.utils.database import Base
-from app.models.core import Stock, OHLCV
+from app.models.core import OHLCV, Stock
 from app.models.events import EventObject
 from app.models.forecast import Forecast
 from app.models.historical import (
@@ -11,16 +10,17 @@ from app.models.historical import (
     PredictionEvaluation,
     SourceArticle,
 )
+from app.utils.database import Base
 
 __all__ = [
-    "Base",
-    "Stock",
     "OHLCV",
-    "EventObject",
-    "Forecast",
+    "Base",
     "CanonicalEvent",
     "DataSource",
+    "EventObject",
+    "Forecast",
     "HistoricalEventOutcome",
     "PredictionEvaluation",
     "SourceArticle",
+    "Stock",
 ]

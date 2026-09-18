@@ -7,8 +7,8 @@ URL dedup (exact) and semantic similarity dedup (fuzzy).
 
 import hashlib
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ export default function Home() {
   const [description, setDescription] = useState("");
   const [tickers, setTickers] = useState("");
   
-  const [pastEvents, setPastEvents] = useState<any[]>([]);
+  const [pastEvents, setPastEvents] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     getEvents().then(res => {

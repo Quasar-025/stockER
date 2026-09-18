@@ -1,7 +1,6 @@
 """Events router — list, retrieve, and manually ingest events."""
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -25,10 +24,10 @@ class IngestRequest(BaseModel):
 
 @router.get("")
 async def list_events(
-    category: Optional[str] = Query(None, description="Filter by event category"),
+    category: str | None = Query(None, description="Filter by event category"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """List canonical events with optional category filter."""
     params: dict = {"limit": limit, "offset": offset}
@@ -63,7 +62,7 @@ async def list_events(
 
 
 @router.get("/{event_id}")
-async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):
+async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
     """Retrieve a single canonical event with its outcomes."""
     # Fetch the event
     stmt = text("""
@@ -112,7 +111,7 @@ async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):
 @router.post("/ingest")
 async def ingest_event(
     request: IngestRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Manually ingest an event — classify, embed, and store it."""
     from app.services.ingestion_pipeline import IngestionPipeline
@@ -141,4 +140,4 @@ async def ingest_event(
 
     except Exception as e:
         logger.error(f"Event ingestion failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

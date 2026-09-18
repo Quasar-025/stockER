@@ -13,14 +13,14 @@ import json
 import logging
 import math
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ingestion.yahoo_finance import MARKET_BENCHMARK, SECTOR_ETFS, YahooFinanceClient
+from app.ingestion.yahoo_finance import MARKET_BENCHMARK, YahooFinanceClient
 from app.intelligence.regime import MarketRegimeDetector
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class HistoricalOutcomeCollector:
                 event_id = event["id"]
                 event_date_str = event["event_date"]
                 event_date = datetime.strptime(event_date_str, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
+                    tzinfo=UTC
                 )
                 category = event["category"]
                 title = event["title"]
@@ -110,7 +110,7 @@ class HistoricalOutcomeCollector:
                     continue
 
                 # Download all needed price data
-                all_tickers_needed = list(set(tickers + [MARKET_BENCHMARK]))
+                all_tickers_needed = list(set([*tickers, MARKET_BENCHMARK]))
                 sector_etf = self.client.sector_etf_for(sector)
                 if sector_etf and sector_etf not in all_tickers_needed:
                     all_tickers_needed.append(sector_etf)
@@ -264,7 +264,7 @@ class HistoricalOutcomeCollector:
 
         # Determine available_at: the latest date for which we have data
         max_date = max(ticker_closes.keys()) if ticker_closes else event_date
-        available_at = datetime(max_date.year, max_date.month, max_date.day, tzinfo=timezone.utc)
+        available_at = datetime(max_date.year, max_date.month, max_date.day, tzinfo=UTC)
 
         return {
             "canonical_event_id": canonical_event_id,

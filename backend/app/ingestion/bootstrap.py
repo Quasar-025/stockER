@@ -7,16 +7,15 @@ Orchestrates the full initial data load:
   4. Embed landmark events in Qdrant for semantic search
 """
 
-import json
 import logging
 from pathlib import Path
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ingestion.yahoo_finance import YahooFinanceClient, MARKET_BENCHMARK
-from app.ingestion.price_backfill import PriceBackfillService
 from app.ingestion.outcome_collector import HistoricalOutcomeCollector
+from app.ingestion.price_backfill import PriceBackfillService
+from app.ingestion.yahoo_finance import YahooFinanceClient
 
 logger = logging.getLogger(__name__)
 

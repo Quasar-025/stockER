@@ -6,7 +6,7 @@ benchmark returns, sector ETF returns, and VIX history.
 """
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 import yfinance as yf
@@ -86,7 +86,7 @@ class YahooFinanceClient:
                     if hasattr(ts, "to_pydatetime"):
                         ts = ts.to_pydatetime()
                     if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=timezone.utc)
+                        ts = ts.replace(tzinfo=UTC)
 
                     vol = row.get("Volume", 0)
                     rows.append({
@@ -139,7 +139,7 @@ class YahooFinanceClient:
     def get_company_name(self, ticker: str) -> str | None:
         """Fetch shortName from yfinance, using an in-memory cache."""
         import functools
-        
+
         # Need to attach cache to the function, not method, to avoid caching `self`
         if not hasattr(self.__class__, "_name_cache"):
             @functools.lru_cache(maxsize=1024)
@@ -152,5 +152,5 @@ class YahooFinanceClient:
                     logger.warning(f"Failed to fetch company name for {t}: {e}")
                     return None
             self.__class__._name_cache = _fetch
-            
+
         return self.__class__._name_cache(ticker)

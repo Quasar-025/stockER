@@ -5,7 +5,6 @@ well-suited for financial news semantic search.
 """
 
 import logging
-from typing import Any
 
 from app.config import settings
 

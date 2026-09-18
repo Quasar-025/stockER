@@ -17,15 +17,15 @@ export interface ImpactForecast {
   reliability_score: number | null;
   regime: string;
   historical_sample_size: number;
-  decomposition: any;
+  decomposition: Record<string, unknown>;
 }
 
 export interface ForecastResponse {
   forecast_id: string;
-  event: any;
-  similar_events: any[];
+  event: Record<string, unknown>;
+  similar_events: Record<string, unknown>[];
   impact_forecasts: ImpactForecast[];
-  causal_paths?: any[];
+  causal_paths?: Record<string, unknown>[];
   explanation: string;
 }
 
@@ -45,7 +45,7 @@ export async function generateForecast(data: ForecastRequest): Promise<ForecastR
   return res.json();
 }
 
-export async function getEvents(): Promise<any> {
+export async function getEvents(): Promise<Record<string, unknown>> {
   const res = await fetch(`${API_BASE}/events`, {
     method: "GET",
   });

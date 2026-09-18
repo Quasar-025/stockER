@@ -10,13 +10,13 @@ No LLM here — pure statistical aggregation.
 import logging
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from app.intelligence.ontology import EventOntologySchema
-from app.intelligence.similarity import SimilarityBreakdown
-from app.intelligence.regime import MarketRegime
 from app.intelligence.distribution import EmpiricalImpactDistribution
 from app.intelligence.effect_decomposition import ReliabilityCalibrator, ReliabilityInputs
+from app.intelligence.ontology import EventOntologySchema
+from app.intelligence.regime import MarketRegime
+from app.intelligence.similarity import SimilarityBreakdown
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class MarketImpactEngine:
                 market_regime=current_regime,
                 similar_events=[],
                 causal_chain=causal_chain or [],
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
                 direction_probability=0.0,
                 model_confidence=0.0,
                 confidence_is_calibrated=False,
@@ -121,10 +121,7 @@ class MarketImpactEngine:
             })
 
         # Compute prediction
-        if total_weight > 0:
-            predicted_impact = weighted_impact / total_weight
-        else:
-            predicted_impact = 0.0
+        predicted_impact = weighted_impact / total_weight if total_weight > 0 else 0.0
 
         # Similarity and count provide inputs to a reliability calibration, not
         # a multiplication that can be misrepresented as a probability.
@@ -154,7 +151,7 @@ class MarketImpactEngine:
             market_regime=current_regime,
             similar_events=event_summaries,
             causal_chain=causal_chain or [],
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             direction_probability=round(direction_probability, 4),
             model_confidence=round(confidence, 4),
             confidence_is_calibrated=reliability.is_calibrated,

@@ -5,7 +5,7 @@
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import text
@@ -50,8 +50,8 @@ class IngestionPipeline:
         try:
             news_items = await client.get_company_news(
                 ticker,
-                from_date=datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
-                to_date=datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
+                from_date=datetime.now(tz=UTC).strftime("%Y-%m-%d"),
+                to_date=datetime.now(tz=UTC).strftime("%Y-%m-%d"),
             )
         except Exception as e:
             logger.error(f"Failed to fetch news for {ticker}: {e}")
@@ -87,7 +87,7 @@ class IngestionPipeline:
         Used by the ``POST /api/events/ingest`` endpoint and the
         forecast pipeline when a user provides raw event text.
         """
-        pub_time = published_at or datetime.now(tz=timezone.utc)
+        pub_time = published_at or datetime.now(tz=UTC)
 
         # Deduplicate
         dedup_result = self.dedup.check(source_url or title, title, description)
@@ -165,7 +165,7 @@ class IngestionPipeline:
         description = article.get("summary", "")
         url = article.get("url", "")
         ts = article.get("datetime", 0)
-        pub_time = datetime.fromtimestamp(ts, tz=timezone.utc) if ts else datetime.now(tz=timezone.utc)
+        pub_time = datetime.fromtimestamp(ts, tz=UTC) if ts else datetime.now(tz=UTC)
 
         return await self.ingest_event_text(
             title=title,

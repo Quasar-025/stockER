@@ -5,13 +5,15 @@ come only from comparable observed residual outcomes.  In their absence, a
 direction-neutral prior produces an explicitly insufficient-evidence result.
 """
 
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.graph.historical_observations import CausalRelationshipObservation, HistoricalEdgeCalibrator
+from app.graph.historical_observations import (
+    CausalRelationshipObservation,
+    HistoricalEdgeCalibrator,
+)
 from app.graph.queries import InMemoryCausalGraph
 from app.graph.schema import ChannelType
 from app.intelligence.distribution import EmpiricalImpactDistribution
@@ -34,7 +36,6 @@ from app.schemas.forecast import (
     ProbabilisticForecast,
     PropagationPath,
 )
-
 
 FORECAST_HORIZONS = (1, 3, 7, 14, 30, 90)
 
@@ -327,7 +328,7 @@ class PropagationEngine:
         )
         contradicting = [
             ContradictingEvent(event_id=event_id, observed_return=value, reason="Observed residual had the opposite sign.")
-            for event_id, value in zip(event_ids, returns)
+            for event_id, value in zip(event_ids, returns, strict=False)
             if evidence.mean_return and value * evidence.mean_return < 0
         ]
         flags: list[str] = []

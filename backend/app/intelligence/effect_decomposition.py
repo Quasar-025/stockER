@@ -1,8 +1,8 @@
 """Inspectable channel-level effect attribution and reliability calibration."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from math import log1p
-from typing import Iterable
 
 from pydantic import BaseModel, Field
 
