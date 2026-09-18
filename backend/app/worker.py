@@ -27,6 +27,8 @@ celery_app.conf.update(
 )
 
 # Optional: Celery beat schedule for recurring tasks
+from celery.schedules import crontab
+
 celery_app.conf.beat_schedule = {
     "fetch-sec-filings-every-15-min": {
         "task": "app.tasks.fetch_latest_sec_filings",
@@ -35,5 +37,13 @@ celery_app.conf.beat_schedule = {
     "fetch-macro-data-daily": {
         "task": "app.tasks.fetch_macro_indicators",
         "schedule": 86400.0,  # 24 hours
+    },
+    "daily-price-update-after-market-close": {
+        "task": "app.tasks.daily_price_update",
+        "schedule": crontab(hour=16, minute=30, day_of_week="1-5"),  # 4:30 PM EST M-F
+    },
+    "scheduled-news-ingestion-hourly": {
+        "task": "app.tasks.scheduled_news_ingestion",
+        "schedule": 3600.0,  # Every hour
     },
 }

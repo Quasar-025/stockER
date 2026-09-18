@@ -82,3 +82,70 @@ def fetch_macro_indicators(self: Any) -> dict[str, Any]:
             await client.close()
             
     return run_async(_fetch())
+
+
+@celery_app.task(bind=True, name="app.tasks.daily_price_update")
+def daily_price_update(self: Any) -> dict[str, Any]:
+    """Fetch daily OHLCV updates for all registered stocks."""
+    logger.info("Starting daily price update via yfinance")
+
+    async def _fetch() -> dict[str, Any]:
+        from app.utils.database import async_session_factory
+        from app.ingestion.price_backfill import PriceBackfillService
+        from sqlalchemy import text
+
+        async with async_session_factory() as db:
+            # Get all active tickers
+            result = await db.execute(text("SELECT ticker FROM stocks"))
+            tickers = [row[0] for row in result.all()]
+
+            if not tickers:
+                return {"status": "skipped", "reason": "No stocks registered"}
+
+            backfill = PriceBackfillService(session=db)
+            
+            # Fetch last 3 days to ensure no gaps
+            from datetime import date, timedelta
+            start_date = date.today() - timedelta(days=3)
+            
+            results = await backfill.backfill(tickers, start=start_date)
+            total = sum(results.values())
+            
+            return {"status": "success", "tickers_processed": len(tickers), "rows_upserted": total}
+
+    return run_async(_fetch())
+
+
+@celery_app.task(bind=True, name="app.tasks.scheduled_news_ingestion")
+def scheduled_news_ingestion(self: Any) -> dict[str, Any]:
+    """Fetch daily Finnhub news for tracked companies and process events."""
+    logger.info("Starting scheduled news ingestion")
+
+    async def _fetch() -> dict[str, Any]:
+        from app.utils.database import async_session_factory
+        from app.services.ingestion_pipeline import IngestionPipeline
+        from sqlalchemy import text
+
+        async with async_session_factory() as db:
+            result = await db.execute(text("SELECT ticker FROM stocks"))
+            tickers = [row[0] for row in result.all()]
+
+            pipeline = IngestionPipeline(session=db)
+            
+            # Try to set up Qdrant
+            try:
+                from app.vectors.store import QdrantEventStore
+                pipeline.qdrant_store = QdrantEventStore()
+            except Exception:
+                pass
+
+            total_processed = 0
+            for ticker in tickers:
+                events = await pipeline.ingest_ticker(ticker)
+                total_processed += len(events)
+                # Sleep briefly to respect Finnhub free tier rate limits (60/min)
+                await asyncio.sleep(1.5)
+
+            return {"status": "success", "events_processed": total_processed}
+
+    return run_async(_fetch())

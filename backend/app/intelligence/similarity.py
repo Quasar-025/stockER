@@ -1,13 +1,15 @@
 """Hybrid Similarity Engine — The heart of StockER.
 
-Computes multi-dimensional similarity between events using 5 weighted
+Computes multi-dimensional similarity between events using weighted
 dimensions, as specified in the architecture:
 
   1. Semantic similarity (35%) — embedding cosine distance
   2. Sector overlap    (25%) — Jaccard similarity of affected sectors
   3. Geographic overlap (15%) — Jaccard similarity of affected countries
   4. Regime match      (15%) — same market regime → bonus
-  5. Volatility match  (10%) — similar vol environment → bonus
+  5. Volatility match
+  6. Severity, magnitude, and duration proximity
+  7. Exposure and supply-chain structural similarity
 
 The LLM never touches this. Pure math.
 """
@@ -25,14 +27,19 @@ logger = logging.getLogger(__name__)
 class SimilarityWeights:
     """Configurable weights for each similarity dimension."""
 
-    semantic: float = 0.35
-    sector: float = 0.25
-    geographic: float = 0.15
-    regime: float = 0.15
-    volatility: float = 0.10
+    semantic: float = 0.25
+    sector: float = 0.16
+    geographic: float = 0.10
+    regime: float = 0.10
+    volatility: float = 0.08
+    severity_similarity: float = 0.08
+    magnitude_similarity: float = 0.10
+    duration_similarity: float = 0.05
+    exposure_similarity: float = 0.04
+    structural_similarity: float = 0.04
 
     def __post_init__(self) -> None:
-        total = self.semantic + self.sector + self.geographic + self.regime + self.volatility
+        total = sum(self.__dict__.values())
         if abs(total - 1.0) > 0.01:
             raise ValueError(f"Weights must sum to 1.0, got {total}")
 
@@ -47,6 +54,11 @@ class SimilarityBreakdown:
     geographic_score: float
     regime_score: float
     volatility_score: float
+    severity_score: float = 0.0
+    magnitude_score: float = 0.0
+    duration_score: float = 0.0
+    exposure_score: float = 0.0
+    structural_score: float = 0.0
     weights: SimilarityWeights = field(default_factory=SimilarityWeights)
 
 
@@ -80,6 +92,10 @@ class HybridSimilarityEngine:
         candidate_regime: MarketRegime,
         query_volatility: float = 0.0,
         candidate_volatility: float = 0.0,
+        query_exposure: float | None = None,
+        candidate_exposure: float | None = None,
+        query_structure: list[str] | None = None,
+        candidate_structure: list[str] | None = None,
     ) -> SimilarityBreakdown:
         """Compute the full hybrid similarity between two events.
 
@@ -96,6 +112,16 @@ class HybridSimilarityEngine:
         geo = self._jaccard(query.affected_countries, candidate.affected_countries)
         regime = self._regime_similarity(query_regime, candidate_regime)
         vol = self._volatility_similarity(query_volatility, candidate_volatility)
+        severity = self._numeric_proximity(query.severity_score, candidate.severity_score)
+        magnitude = self._numeric_proximity(
+            query.estimated_disruption_magnitude, candidate.estimated_disruption_magnitude
+        )
+        duration = self._numeric_proximity(
+            float(query.estimated_duration_days) if query.estimated_duration_days is not None else None,
+            float(candidate.estimated_duration_days) if candidate.estimated_duration_days is not None else None,
+        )
+        exposure = self._numeric_proximity(query_exposure, candidate_exposure)
+        structural = self._jaccard(query_structure or [], candidate_structure or [])
 
         overall = (
             self.weights.semantic * semantic_score
@@ -103,6 +129,11 @@ class HybridSimilarityEngine:
             + self.weights.geographic * geo
             + self.weights.regime * regime
             + self.weights.volatility * vol
+            + self.weights.severity_similarity * severity
+            + self.weights.magnitude_similarity * magnitude
+            + self.weights.duration_similarity * duration
+            + self.weights.exposure_similarity * exposure
+            + self.weights.structural_similarity * structural
         )
 
         return SimilarityBreakdown(
@@ -112,6 +143,11 @@ class HybridSimilarityEngine:
             geographic_score=round(geo, 4),
             regime_score=round(regime, 4),
             volatility_score=round(vol, 4),
+            severity_score=round(severity, 4),
+            magnitude_score=round(magnitude, 4),
+            duration_score=round(duration, 4),
+            exposure_score=round(exposure, 4),
+            structural_score=round(structural, 4),
             weights=self.weights,
         )
 
@@ -157,6 +193,16 @@ class HybridSimilarityEngine:
         # Exponential decay: diff of 0 → 1.0, diff of 0.5 → ~0.07
         import math
         return math.exp(-5 * diff)
+
+    @staticmethod
+    def _numeric_proximity(value_a: float | None, value_b: float | None) -> float:
+        """Score comparable numeric magnitudes without treating missing values as equal."""
+        if value_a is None and value_b is None:
+            return 0.5
+        if value_a is None or value_b is None:
+            return 0.25
+        scale = max(abs(value_a), abs(value_b), 0.01)
+        return max(0.0, 1.0 - abs(value_a - value_b) / scale)
 
     def rank_candidates(
         self,

@@ -6,6 +6,7 @@ The LLM/FinBERT classifies into these categories; the similarity engine
 uses them for dimension weighting.
 """
 
+import uuid
 from enum import StrEnum
 from datetime import datetime
 from pydantic import BaseModel, Field
@@ -105,10 +106,17 @@ class EventOntologySchema(BaseModel):
     description: str = Field(..., description="Full event description")
     source_url: str = Field(..., description="Original source URL")
     published_at: datetime = Field(..., description="Publication timestamp")
+    canonical_event_id: uuid.UUID | None = Field(default=None)
+    event_date: datetime | None = Field(default=None, description="When the event occurred, if known")
 
     # Classification
     category: EventCategory = Field(..., description="Event category from ontology")
+    subcategory: str | None = None
     severity_score: float = Field(..., ge=0.0, le=1.0, description="Severity 0-1")
+    estimated_disruption_magnitude: float | None = Field(default=None, ge=0.0, le=1.0)
+    estimated_duration_days: int | None = Field(default=None, ge=0)
+    market_regime_at_event: str | None = None
+    vix_at_event: float | None = Field(default=None, ge=0.0)
 
     # Affected entities (extracted by NER)
     affected_tickers: list[str] = Field(default_factory=list)

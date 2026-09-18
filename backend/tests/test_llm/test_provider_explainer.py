@@ -81,6 +81,12 @@ class TestBuildExplanationPrompt:
         assert "4.5%" in prompt
         assert "decline" in prompt
 
+    def test_prompt_distinguishes_probability_from_reliability(self):
+        forecast = _make_forecast(direction_probability=0.72, model_confidence=0.44, sample_count=3)
+        prompt = build_explanation_prompt(forecast)
+        assert "72%" in prompt
+        assert "44%" in prompt
+
     def test_prompt_contains_similar_events(self):
         forecast = _make_forecast()
         prompt = build_explanation_prompt(forecast)
@@ -106,6 +112,7 @@ class TestFallbackExplanation:
         assert "AAPL" in text
         assert "4.5%" in text
         assert "decline" in text
+        assert "Direction likelihood" in text
 
     def test_fallback_contains_similar_events(self):
         forecast = _make_forecast()

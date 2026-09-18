@@ -46,7 +46,7 @@ desktop.ini
 docker-compose.override.yml
 
 # Data volumes (don't commit local DB data)
-data/
+/data/
 *.db
 *.sqlite3
 
@@ -55,5 +55,5 @@ data/
 logs/
 
 # Celery
-celerybeat-schedule
+celerybeat-schedule*
 celerybeat.pid
