@@ -175,7 +175,7 @@ class HistoricalOutcomeCollector:
     def _load_landmark_events(self) -> list[dict[str, Any]]:
         """Load landmark events from the JSON file."""
         with open(LANDMARK_EVENTS_PATH) as f:
-            return json.load(f)
+            return json.load(f)  # type: ignore[no-any-return]
 
     def _compute_regime(self, spy_closes: dict[date, float], event_date: date) -> str:
         """Compute market regime from SPY returns before the event."""

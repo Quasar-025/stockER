@@ -155,7 +155,7 @@ class EventClassifier:
             try:
                 from transformers import pipeline
 
-                self._finbert_pipeline = pipeline(
+                self._finbert_pipeline = pipeline(  # type: ignore[assignment]
                     "sentiment-analysis",
                     model="ProsusAI/finbert",
                     device=-1,  # CPU by default

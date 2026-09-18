@@ -1,5 +1,6 @@
 """System health endpoint — checks database, Qdrant, Neo4j, Redis connectivity."""
 
+from typing import Any
 import logging
 from datetime import UTC, datetime
 
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/api/health", tags=["health"])
 
 
 @router.get("")
-async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
+async def health_check(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:  # noqa: B008
     """Check overall system health and component connectivity."""
     status = {
         "status": "ok",
@@ -26,9 +27,9 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
     # PostgreSQL / TimescaleDB
     try:
         await db.execute(text("SELECT 1"))
-        status["components"]["database"] = {"status": "healthy"}
+        status["components"]["database"] = {"status": "healthy"}  # type: ignore[index]
     except Exception as e:
-        status["components"]["database"] = {"status": "unhealthy", "error": str(e)}
+        status["components"]["database"] = {"status": "unhealthy", "error": str(e)}  # type: ignore[index]
         status["status"] = "degraded"
 
     # Redis
@@ -37,9 +38,9 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
 
         r = redis.Redis(host="localhost", port=6379, socket_timeout=2)
         r.ping()
-        status["components"]["redis"] = {"status": "healthy"}
+        status["components"]["redis"] = {"status": "healthy"}  # type: ignore[index]
     except Exception as e:
-        status["components"]["redis"] = {"status": "unhealthy", "error": str(e)}
+        status["components"]["redis"] = {"status": "unhealthy", "error": str(e)}  # type: ignore[index]
         status["status"] = "degraded"
 
     # Qdrant
@@ -48,9 +49,9 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
 
         qc = QdrantClient(host="localhost", port=6333, timeout=2)
         qc.get_collections()
-        status["components"]["qdrant"] = {"status": "healthy"}
+        status["components"]["qdrant"] = {"status": "healthy"}  # type: ignore[index]
     except Exception as e:
-        status["components"]["qdrant"] = {"status": "unhealthy", "error": str(e)}
+        status["components"]["qdrant"] = {"status": "unhealthy", "error": str(e)}  # type: ignore[index]
         status["status"] = "degraded"
 
     # Neo4j
@@ -60,18 +61,18 @@ async def health_check(db: AsyncSession = Depends(get_db)):  # noqa: B008
         neo4j = Neo4jGraphClient()
         healthy = await neo4j.healthcheck()
         await neo4j.close()
-        status["components"]["neo4j"] = {"status": "healthy" if healthy else "unhealthy"}
+        status["components"]["neo4j"] = {"status": "healthy" if healthy else "unhealthy"}  # type: ignore[index]
         if not healthy:
             status["status"] = "degraded"
     except Exception as e:
-        status["components"]["neo4j"] = {"status": "unhealthy", "error": str(e)}
+        status["components"]["neo4j"] = {"status": "unhealthy", "error": str(e)}  # type: ignore[index]
         status["status"] = "degraded"
 
     return status
 
 
 @router.get("/sources")
-async def data_source_status(db: AsyncSession = Depends(get_db)):  # noqa: B008
+async def data_source_status(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:  # noqa: B008
     """Return data source freshness and counts."""
     sources = {}
 

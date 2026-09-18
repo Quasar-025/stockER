@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ingestion.finnhub_rest import FinnhubRestClient
+from app.ingestion.finnhub_rest import FinnhubRestClient  # type: ignore[attr-defined]
 from app.intelligence.classifier import EventClassifier
 from app.intelligence.dedup import DeduplicationEngine
 from app.intelligence.ontology import EventOntologySchema
@@ -97,7 +97,7 @@ class IngestionPipeline:
             return None
 
         # Classify
-        classification = self.classifier.classify(title, description)
+        classification = self.classifier.classify(title, description)  # type: ignore[attr-defined]
 
         # Build ontology schema
         event = EventOntologySchema(

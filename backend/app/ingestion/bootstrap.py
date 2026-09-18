@@ -324,20 +324,20 @@ class BootstrapService:
             logger.info("=== Phase 2: Backfilling OHLCV (this may take several minutes) ===")
             backfill = PriceBackfillService(self.session, self.client)
             price_results = await backfill.backfill(INITIAL_TICKERS, start="2008-01-01")
-            summary["ohlcv_backfill"] = price_results
+            summary["ohlcv_backfill"] = price_results  # type: ignore[assignment]
         else:
             logger.info("=== Phase 2: OHLCV backfill skipped ===")
-            summary["ohlcv_backfill"] = "skipped"
+            summary["ohlcv_backfill"] = "skipped"  # type: ignore[assignment]
 
         # Phase 3: Compute landmark event outcomes
         if not skip_outcomes:
             logger.info("=== Phase 3: Computing landmark event outcomes ===")
             collector = HistoricalOutcomeCollector(self.session, self.client)
             outcome_results = await collector.collect_all()
-            summary["landmark_outcomes"] = outcome_results
+            summary["landmark_outcomes"] = outcome_results  # type: ignore[assignment]
         else:
             logger.info("=== Phase 3: Landmark outcomes skipped ===")
-            summary["landmark_outcomes"] = "skipped"
+            summary["landmark_outcomes"] = "skipped"  # type: ignore[assignment]
 
         logger.info(f"=== Bootstrap complete === Summary: {summary}")
         return summary

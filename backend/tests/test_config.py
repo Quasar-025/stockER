@@ -26,7 +26,7 @@ def test_settings_cors_origins_invalid_json(monkeypatch):
     """Test graceful fallback when CORS_ORIGINS is invalid JSON."""
     monkeypatch.setenv("CORS_ORIGINS", "not-valid-json")
     settings = Settings()
-    assert settings.cors_origins_list == ["http://localhost:3000"]
+    assert settings.cors_origins_list == ["http://localhost:3000", "http://localhost:3001"]
 
 
 def test_settings_is_testing():

@@ -40,6 +40,6 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short
+        run: python -m pytest tests/ -v --tb=short
         env:
           APP_ENV: testing

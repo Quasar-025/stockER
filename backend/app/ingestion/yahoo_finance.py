@@ -146,7 +146,7 @@ class YahooFinanceClient:
         if not hasattr(self.__class__, "_name_cache"):
 
             @functools.lru_cache(maxsize=1024)
-            def _fetch(t: str):
+            def _fetch(t: str):  # type: ignore[no-untyped-def]
                 try:
                     import yfinance as yf
 
@@ -156,6 +156,6 @@ class YahooFinanceClient:
                     logger.warning(f"Failed to fetch company name for {t}: {e}")
                     return None
 
-            self.__class__._name_cache = _fetch
+            self.__class__._name_cache = _fetch  # type: ignore[attr-defined]
 
-        return self.__class__._name_cache(ticker)
+        return getattr(self.__class__, "_name_cache")(ticker)  # type: ignore

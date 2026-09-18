@@ -42,7 +42,7 @@ def fetch_latest_sec_filings(self: Any, ticker: str = "AAPL") -> dict[str, Any]:
         finally:
             await client.close()
 
-    return run_async(_fetch())
+    return run_async(_fetch())  # type: ignore[no-any-return]
 
 
 @celery_app.task(bind=True, name="app.tasks.fetch_macro_indicators")
@@ -73,7 +73,7 @@ def fetch_macro_indicators(self: Any) -> dict[str, Any]:
         finally:
             await client.close()
 
-    return run_async(_fetch())
+    return run_async(_fetch())  # type: ignore[no-any-return]
 
 
 @celery_app.task(bind=True, name="app.tasks.daily_price_update")
@@ -107,7 +107,7 @@ def daily_price_update(self: Any) -> dict[str, Any]:
 
             return {"status": "success", "tickers_processed": len(tickers), "rows_upserted": total}
 
-    return run_async(_fetch())
+    return run_async(_fetch())  # type: ignore[no-any-return]
 
 
 @celery_app.task(bind=True, name="app.tasks.scheduled_news_ingestion")
@@ -144,4 +144,4 @@ def scheduled_news_ingestion(self: Any) -> dict[str, Any]:
 
             return {"status": "success", "events_processed": total_processed}
 
-    return run_async(_fetch())
+    return run_async(_fetch())  # type: ignore[no-any-return]

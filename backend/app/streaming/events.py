@@ -60,7 +60,7 @@ class EventConsumer:
         """Initialize the Kafka consumer."""
         config = get_kafka_config()
         config.update(
-            {"group.id": group_id, "auto.offset.reset": "earliest", "enable.auto.commit": False}
+            {"group.id": group_id, "auto.offset.reset": "earliest", "enable.auto.commit": False}  # type: ignore[dict-item]
         )
         self.consumer = Consumer(config)
         self.consumer.subscribe(topics)

@@ -20,7 +20,7 @@ def test_fetch_latest_sec_filings_task(mock_sec_client_class, mock_producer_clas
 
     # Celery tasks with bind=True receive `self` as first arg.
     # When calling the function directly (not via .delay()), we pass a mock self.
-    result = fetch_latest_sec_filings(MagicMock(), "AAPL")
+    result = fetch_latest_sec_filings.run("AAPL")
 
     assert result == {"status": "success", "count": 1}
     mock_sec_client.get_latest_filings.assert_called_once_with("AAPL")
@@ -43,7 +43,7 @@ def test_fetch_macro_indicators_task(mock_fred_client_class, mock_producer_class
     ])
     mock_fred_client.close = AsyncMock()
 
-    result = fetch_macro_indicators(MagicMock())
+    result = fetch_macro_indicators.run()
 
     assert result["status"] == "success"
     # Should fetch CPIAUCSL, FEDFUNDS, UNRATE

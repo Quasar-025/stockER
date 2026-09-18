@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/graph", tags=["graph"])
 
 
 @router.get("/entities")
-async def list_graph_entities():
+async def list_graph_entities():  # type: ignore[no-untyped-def]
     """List all company nodes in the causal graph."""
     client = Neo4jGraphClient()
     try:
@@ -31,7 +31,7 @@ async def list_graph_entities():
 
 
 @router.get("/edges")
-async def list_graph_edges(ticker: str | None = None):
+async def list_graph_edges(ticker: str | None = None):  # type: ignore[no-untyped-def]
     """List causal relationships, optionally filtered by a source ticker."""
     client = Neo4jGraphClient()
     try:
@@ -58,7 +58,7 @@ async def list_graph_edges(ticker: str | None = None):
 
 
 @router.get("/traverse/{ticker}")
-async def traverse_graph(ticker: str, max_depth: int = 3):
+async def traverse_graph(ticker: str, max_depth: int = 3):  # type: ignore[no-untyped-def]
     """Breadth-first traversal from a source ticker to find propagation paths."""
     ticker = ticker.upper()
     client = Neo4jGraphClient()

@@ -21,4 +21,4 @@ def load_landmark_manifest() -> list[dict[str, Any]]:
             raise ValueError("Landmark records must be labelled outcomes_uncollected")
         if record.get("outcomes") not in (None, {}):
             raise ValueError("Bootstrap manifest must not contain unverified outcomes")
-    return records
+    return records  # type: ignore[no-any-return]

@@ -1,5 +1,6 @@
 """Forecast router — generate new forecasts or retrieve existing ones."""
 
+from typing import Any
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -23,7 +24,7 @@ class ForecastRequest(BaseModel):
 
 
 @router.post("")
-async def generate_forecast(
+async def generate_forecast(  # type: ignore[no-untyped-def]
     request: ForecastRequest,
     fastapi_req: Request,
     db: AsyncSession = Depends(get_db),  # noqa: B008
@@ -71,7 +72,7 @@ async def generate_forecast(
 
 
 @router.get("/history")
-async def list_forecasts(
+async def list_forecasts(  # type: ignore[no-untyped-def]
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),  # noqa: B008
@@ -96,7 +97,7 @@ async def list_forecasts(
 
 
 @router.get("/{forecast_id}")
-async def get_forecast(forecast_id: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
+async def get_forecast(forecast_id: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:  # noqa: B008
     """Retrieve a specific generated forecast by ID."""
     stmt = text("""
         SELECT id, event_title, event_category, event_severity,

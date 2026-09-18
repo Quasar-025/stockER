@@ -52,7 +52,7 @@ class AlphaVantageClient:
                 logger.warning(f"Alpha Vantage rate limit exceeded: {data['Information']}")
                 return {"feed": []}
 
-            return data
+            return data  # type: ignore[no-any-return]
 
         except httpx.HTTPError as e:
             logger.error(f"HTTP error fetching news sentiment for {ticker}: {e}")
@@ -72,7 +72,7 @@ class AlphaVantageClient:
                 },
             )
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
 
         except httpx.HTTPError as e:
             logger.error(f"HTTP error fetching overview for {ticker}: {e}")

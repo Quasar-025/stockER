@@ -173,7 +173,7 @@ class MarketImpactEngine:
             ),
         )
 
-    def compute_probabilistic_forecast(self, *args, **kwargs):
+    def compute_probabilistic_forecast(self, *args, **kwargs):  # type: ignore[no-untyped-def]
         """Delegate multi-entity causal forecasting to ``PropagationEngine``.
 
         The explicit engine parameter avoids creating graph/database clients

@@ -69,7 +69,7 @@ class EmbeddingService:
             if embeddings:
                 vector = embeddings[0]
                 self._dimension = len(vector)
-                return vector
+                return vector  # type: ignore[no-any-return]
             raise ValueError("Ollama returned empty embeddings")
         except Exception as e:
             logger.error(f"Ollama embedding failed: {e}")

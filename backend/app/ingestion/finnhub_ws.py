@@ -41,7 +41,7 @@ class FinnhubWebSocketClient:
         while self._running:
             try:
                 async with websockets.connect(self.ws_url) as websocket:
-                    self.connection = websocket
+                    self.connection = websocket  # type: ignore[assignment]
                     logger.info("Connected to Finnhub WebSocket")
 
                     # Re-subscribe to any previously subscribed tickers after reconnect

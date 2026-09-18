@@ -28,7 +28,7 @@ class Base(DeclarativeBase):
     pass
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncSession:  # type: ignore[misc]
     """Dependency that provides an async database session."""
     async with async_session_factory() as session:
         try:

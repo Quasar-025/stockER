@@ -46,7 +46,7 @@ class OllamaProvider(LLMProvider):
             messages.append({"role": "user", "content": prompt})
 
             response = await client.chat(model=self.model, messages=messages)
-            return response["message"]["content"]
+            return response["message"]["content"]  # type: ignore[no-any-return]
 
         except Exception as e:
             logger.error(f"Ollama generation failed: {e}")
@@ -87,7 +87,7 @@ class OpenAIProvider(LLMProvider):
 
             response = await client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                messages=messages,  # type: ignore[arg-type]
             )
             return response.choices[0].message.content or ""
 

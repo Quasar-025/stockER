@@ -1,5 +1,6 @@
 """Events router — list, retrieve, and manually ingest events."""
 
+from typing import Any
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -24,7 +25,7 @@ class IngestRequest(BaseModel):
 
 
 @router.get("")
-async def list_events(
+async def list_events(  # type: ignore[no-untyped-def]
     category: str | None = Query(None, description="Filter by event category"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
@@ -63,7 +64,7 @@ async def list_events(
 
 
 @router.get("/{event_id}")
-async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
+async def get_event(event_id: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:  # noqa: B008
     """Retrieve a single canonical event with its outcomes."""
     # Fetch the event
     stmt = text("""
@@ -110,7 +111,7 @@ async def get_event(event_id: str, db: AsyncSession = Depends(get_db)):  # noqa:
 
 
 @router.post("/ingest")
-async def ingest_event(
+async def ingest_event(  # type: ignore[no-untyped-def]
     request: IngestRequest,
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):

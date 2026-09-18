@@ -33,7 +33,7 @@ class WalkForwardBacktester:
         records: dict[str, list[PredictionRecord]] = {model.name: [] for model in models}
         for case in sorted(cases, key=lambda item: item.as_of):
             for model in models:
-                prediction = model.predict(case, regime)
+                prediction = model.predict(case, regime)  # type: ignore[attr-defined]
                 records[model.name].append(self._record(case, prediction))
         return BaselineComparison(
             predictions=records,

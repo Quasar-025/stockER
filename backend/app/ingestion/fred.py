@@ -53,7 +53,7 @@ class FREDClient:
             response.raise_for_status()
 
             data = response.json()
-            return data.get("observations", [])
+            return data.get("observations", [])  # type: ignore[no-any-return]
 
         except httpx.HTTPError as e:
             logger.error(f"HTTP error fetching FRED series {series_id}: {e}")

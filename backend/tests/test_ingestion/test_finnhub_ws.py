@@ -54,11 +54,11 @@ async def test_callbacks_executed():
     client._running = True
 
     # We will yield one message then break the loop
-    async def mock_async_generator():
+    async def mock_async_generator(self=None):
         yield '{"type": "data", "data": [{"s": "AAPL", "p": 150.0, "v": 100}]}'
         client._running = False  # Break the loop on the next iteration
 
-    client.connection.__aiter__.return_value = mock_async_generator()
+    client.connection.__aiter__ = mock_async_generator
 
     await client._listen()
 

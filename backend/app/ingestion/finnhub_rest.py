@@ -62,7 +62,7 @@ class FinnhubRESTClient:
         try:
             response = await self.client.get("/stock/profile2", params={"symbol": ticker})
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
 
         except httpx.HTTPError as e:
             logger.error(f"HTTP error fetching profile for {ticker}: {e}")

@@ -42,7 +42,7 @@ class SecEdgarClient:
                 "count": 10,
             }
 
-            response = await self.client.get(self.BASE_RSS_URL, params=params)
+            response = await self.client.get(self.BASE_RSS_URL, params=params)  # type: ignore[arg-type]
             response.raise_for_status()
 
             # Parse the ATOM/RSS feed

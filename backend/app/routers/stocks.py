@@ -1,5 +1,6 @@
 """Stocks router — list, retrieve, and trigger price refreshes."""
 
+from typing import Any
 import logging
 from datetime import UTC, date, datetime, timedelta
 
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/api/stocks", tags=["stocks"])
 
 
 @router.get("")
-async def list_stocks(
+async def list_stocks(  # type: ignore[no-untyped-def]
     sector: str | None = Query(None, description="Filter by sector"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
@@ -49,7 +50,7 @@ async def list_stocks(
 
 
 @router.get("/{ticker}")
-async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
+async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:  # noqa: B008
     """Retrieve detailed stock information including latest OHLCV."""
     ticker = ticker.upper()
 
@@ -85,7 +86,7 @@ async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)):  # noqa: B
 
 
 @router.get("/{ticker}/prices")
-async def get_stock_prices(
+async def get_stock_prices(  # type: ignore[no-untyped-def]
     ticker: str,
     days: int = Query(30, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),  # noqa: B008
@@ -112,7 +113,7 @@ async def get_stock_prices(
 
 
 @router.post("/{ticker}/refresh")
-async def refresh_stock_prices(
+async def refresh_stock_prices(  # type: ignore[no-untyped-def]
     ticker: str,
     days: int = Query(30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),  # noqa: B008
