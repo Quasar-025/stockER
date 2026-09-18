@@ -1,8 +1,8 @@
 """Tests for SQLAlchemy core models."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from app.models.core import Stock, OHLCV
+from app.models.core import OHLCV, Stock
 
 
 def test_stock_model_creation():
@@ -15,7 +15,7 @@ def test_stock_model_creation():
         country="USA",
         exchange="NASDAQ",
     )
-    
+
     assert stock.ticker == "AAPL"
     assert stock.name == "Apple Inc."
     assert stock.sector == "Technology"
@@ -23,7 +23,7 @@ def test_stock_model_creation():
 
 def test_ohlcv_model_creation():
     """Test that OHLCV model can be instantiated with required fields."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     candle = OHLCV(
         time=now,
         ticker="AAPL",
@@ -33,7 +33,7 @@ def test_ohlcv_model_creation():
         close=154.0,
         volume=1000000,
     )
-    
+
     assert candle.ticker == "AAPL"
     assert candle.time == now
     assert candle.close == 154.0

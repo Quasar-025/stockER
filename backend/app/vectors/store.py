@@ -91,7 +91,7 @@ class QdrantEventStore:
         vectors = await self.embedding_service.embed_batch(texts)
 
         points = []
-        for (event_id, text, metadata), vector in zip(items, vectors):
+        for (event_id, text, metadata), vector in zip(items, vectors, strict=False):
             payload = metadata or {}
             payload["text_preview"] = text[:500]
             points.append(

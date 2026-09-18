@@ -1,6 +1,6 @@
 """Tests for the deduplication engine."""
 
-from app.intelligence.dedup import DeduplicationEngine, DeduplicationResult
+from app.intelligence.dedup import DeduplicationEngine
 
 
 class TestDeduplicationEngine:

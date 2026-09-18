@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 LANDMARK_PATH = Path(__file__).resolve().parents[2] / "data" / "landmark_events.json"
 
 

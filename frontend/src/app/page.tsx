@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Dashboard } from "@/components/forecast/dashboard";
-import { generateForecast, ForecastResponse, getEvents } from "@/lib/api";
+import { generateForecast, ForecastResponse, getEvents, EventRecord } from "@/lib/api";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -11,7 +11,7 @@ export default function Home() {
   const [description, setDescription] = useState("");
   const [tickers, setTickers] = useState("");
   
-  const [pastEvents, setPastEvents] = useState<any[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventRecord[]>([]);
 
   useEffect(() => {
     getEvents().then(res => {

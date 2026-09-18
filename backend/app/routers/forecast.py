@@ -1,7 +1,6 @@
 """Forecast router — generate new forecasts or retrieve existing ones."""
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -26,7 +25,7 @@ class ForecastRequest(BaseModel):
 async def generate_forecast(
     request: ForecastRequest,
     fastapi_req: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Run the intelligence pipeline to forecast market impact."""
     from app.services.forecast_pipeline import ForecastPipeline
@@ -34,7 +33,7 @@ async def generate_forecast(
     neo4j_client = getattr(fastapi_req.app.state, "neo4j_client", None)
     if not neo4j_client:
         neo4j_client = getattr(fastapi_req.app.state, "neo4j", None)
-        
+
     if not neo4j_client:
         # Lazy initialization if it failed during startup
         from app.graph.client import Neo4jGraphClient
@@ -65,14 +64,14 @@ async def generate_forecast(
 
     except Exception as e:
         logger.error(f"Forecast generation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/history")
 async def list_forecasts(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """List previously generated forecasts."""
     stmt = text("""
@@ -94,7 +93,7 @@ async def list_forecasts(
 
 
 @router.get("/{forecast_id}")
-async def get_forecast(forecast_id: str, db: AsyncSession = Depends(get_db)):
+async def get_forecast(forecast_id: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
     """Retrieve a specific generated forecast by ID."""
     stmt = text("""
         SELECT id, event_title, event_category, event_severity,

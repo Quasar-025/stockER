@@ -8,8 +8,8 @@ missing credentials.
 import json
 from pathlib import Path
 from urllib.parse import quote
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Resolve configuration relative to this source file rather than the process
 # working directory. Alembic runs from ``backend/`` while Docker Compose and

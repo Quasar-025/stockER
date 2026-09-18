@@ -1,6 +1,5 @@
 """Tests for the Event Classifier."""
 
-import pytest
 
 from app.intelligence.classifier import EventClassifier
 from app.intelligence.ontology import EventCategory

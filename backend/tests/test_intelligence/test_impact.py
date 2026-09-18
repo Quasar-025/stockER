@@ -1,12 +1,13 @@
 """Tests for the Market Impact Engine."""
 
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from app.intelligence.impact import MarketImpactEngine, ForecastResult
-from app.intelligence.similarity import SimilarityBreakdown, SimilarityWeights
-from app.intelligence.ontology import EventOntologySchema, EventCategory
+import pytest
+
+from app.intelligence.impact import MarketImpactEngine
+from app.intelligence.ontology import EventCategory, EventOntologySchema
 from app.intelligence.regime import MarketRegime
+from app.intelligence.similarity import SimilarityBreakdown
 
 
 def _make_event(**overrides) -> EventOntologySchema:
@@ -14,7 +15,7 @@ def _make_event(**overrides) -> EventOntologySchema:
         "title": "Test Event",
         "description": "Test",
         "source_url": "https://example.com/test",
-        "published_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        "published_at": datetime(2024, 1, 1, tzinfo=UTC),
         "category": EventCategory.INTEREST_RATE_CHANGE,
         "severity_score": 0.5,
         "affected_tickers": ["AAPL"],

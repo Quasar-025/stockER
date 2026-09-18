@@ -131,9 +131,9 @@ class HistoricalEdgeCalibrator:
         x_values = [entry.observation.source_return for entry in usable]
         y_values = list(residuals)
         weight_sum = sum(weights)
-        x_mean = sum(weight * value for weight, value in zip(weights, x_values)) / weight_sum
-        y_mean = sum(weight * value for weight, value in zip(weights, y_values)) / weight_sum
-        denominator = sum(weight * (value - x_mean) ** 2 for weight, value in zip(weights, x_values))
+        x_mean = sum(weight * value for weight, value in zip(weights, x_values, strict=False)) / weight_sum
+        y_mean = sum(weight * value for weight, value in zip(weights, y_values, strict=False)) / weight_sum
+        denominator = sum(weight * (value - x_mean) ** 2 for weight, value in zip(weights, x_values, strict=False))
         if denominator <= 1e-12:
             return EdgeCalibration(
                 coefficient=None,
@@ -147,12 +147,12 @@ class HistoricalEdgeCalibrator:
             )
         coefficient = sum(
             weight * (x_value - x_mean) * (y_value - y_mean)
-            for weight, x_value, y_value in zip(weights, x_values, y_values)
+            for weight, x_value, y_value in zip(weights, x_values, y_values, strict=False)
         ) / denominator
         intercept = y_mean - coefficient * x_mean
         squared_error = sum(
             weight * (y_value - (intercept + coefficient * x_value)) ** 2
-            for weight, x_value, y_value in zip(weights, x_values, y_values)
+            for weight, x_value, y_value in zip(weights, x_values, y_values, strict=False)
         )
         standard_error = sqrt(squared_error / max(1, len(usable) - 2) / denominator)
         transmission_probability = sum(1 for value in residuals if abs(value) >= 0.002) / len(residuals)

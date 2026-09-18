@@ -1,15 +1,15 @@
 """Tests for the Hybrid Similarity Engine."""
 
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
+import pytest
+
+from app.intelligence.ontology import EventCategory, EventOntologySchema
+from app.intelligence.regime import MarketRegime
 from app.intelligence.similarity import (
     HybridSimilarityEngine,
     SimilarityWeights,
-    SimilarityBreakdown,
 )
-from app.intelligence.ontology import EventOntologySchema, EventCategory
-from app.intelligence.regime import MarketRegime
 
 
 def _make_event(**overrides) -> EventOntologySchema:
@@ -18,7 +18,7 @@ def _make_event(**overrides) -> EventOntologySchema:
         "title": "Test Event",
         "description": "Test description",
         "source_url": "https://example.com/test",
-        "published_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        "published_at": datetime(2024, 1, 1, tzinfo=UTC),
         "category": EventCategory.INTEREST_RATE_CHANGE,
         "severity_score": 0.5,
         "affected_tickers": ["AAPL"],

@@ -1,7 +1,7 @@
 """Stocks router — list, retrieve, and trigger price refreshes."""
 
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
@@ -19,7 +19,7 @@ async def list_stocks(
     sector: str | None = Query(None, description="Filter by sector"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """List registered stocks with optional sector filter."""
     params: dict = {"limit": limit, "offset": offset}
@@ -49,7 +49,7 @@ async def list_stocks(
 
 
 @router.get("/{ticker}")
-async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)):
+async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)):  # noqa: B008
     """Retrieve detailed stock information including latest OHLCV."""
     ticker = ticker.upper()
 
@@ -88,12 +88,12 @@ async def get_stock(ticker: str, db: AsyncSession = Depends(get_db)):
 async def get_stock_prices(
     ticker: str,
     days: int = Query(30, ge=1, le=1000),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Retrieve OHLCV time-series data for a ticker."""
     ticker = ticker.upper()
 
-    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    start_date = datetime.now(UTC) - timedelta(days=days)
 
     stmt = text("""
         SELECT time, open, high, low, close, volume
@@ -115,7 +115,7 @@ async def get_stock_prices(
 async def refresh_stock_prices(
     ticker: str,
     days: int = Query(30, ge=1, le=365),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Trigger an immediate price data refresh for a ticker via yfinance."""
     ticker = ticker.upper()
@@ -138,4 +138,4 @@ async def refresh_stock_prices(
         }
     except Exception as e:
         logger.error(f"Price refresh failed for {ticker}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.graph.queries import InMemoryCausalGraph
 from app.intelligence.ontology import EventCategory, EventOntologySchema
@@ -7,7 +7,7 @@ from app.intelligence.regime import MarketRegime
 
 
 def test_probability_and_confidence_are_separate_in_public_schema() -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     event = EventOntologySchema(
         title="Evidence-poor event", description="test", source_url="https://example.test/no-history",
         published_at=now, category=EventCategory.SUPPLY_CHAIN_DISRUPTION, severity_score=0.8,

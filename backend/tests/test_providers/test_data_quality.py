@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
@@ -18,7 +18,7 @@ def test_missing_source_timestamp_is_explicitly_delayed() -> None:
 def test_old_source_timestamp_is_stale() -> None:
     quality = DataQualityRecord.from_source(
         source="test",
-        source_timestamp=datetime.now(timezone.utc) - timedelta(days=2),
+        source_timestamp=datetime.now(UTC) - timedelta(days=2),
         stale_after_seconds=3600,
     )
 

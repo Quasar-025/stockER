@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.evaluation.backtester import WalkForwardBacktester
 from app.evaluation.baselines import BacktestCase, HistoricalCandidate
@@ -7,7 +7,7 @@ from app.intelligence.regime import MarketRegime
 
 
 def _case(depth: int) -> BacktestCase:
-    as_of = datetime(2024, 4, 3, tzinfo=timezone.utc)
+    as_of = datetime(2024, 4, 3, tzinfo=UTC)
     return BacktestCase(
         case_id=f"case-{depth}", as_of=as_of, ticker="NVDA", actual_return=-0.02,
         propagation_depth=depth, horizon_days=7, market_return=-0.01,

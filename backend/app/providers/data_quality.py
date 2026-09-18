@@ -6,9 +6,9 @@ does not infer that a value is correct merely because a provider returned it.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -40,7 +40,7 @@ class DataQualityRecord(BaseModel):
 
     source: str = Field(min_length=1)
     source_timestamp: datetime | None = None
-    ingested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ingested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     data_quality: float = Field(ge=0.0, le=1.0)
     confidence: float = Field(ge=0.0, le=1.0)
     freshness_seconds: float | None = Field(default=None, ge=0.0)
@@ -66,7 +66,7 @@ class DataQualityRecord(BaseModel):
         and never substitutes for forecast confidence.
         """
 
-        captured_at = ingested_at or datetime.now(timezone.utc)
+        captured_at = ingested_at or datetime.now(UTC)
         if source_timestamp is None:
             return cls(
                 source=source,
@@ -80,7 +80,7 @@ class DataQualityRecord(BaseModel):
             )
 
         if source_timestamp.tzinfo is None:
-            source_timestamp = source_timestamp.replace(tzinfo=timezone.utc)
+            source_timestamp = source_timestamp.replace(tzinfo=UTC)
         freshness = max(0.0, (captured_at - source_timestamp).total_seconds())
         if freshness > stale_after_seconds:
             status = DataStatus.STALE
@@ -107,7 +107,7 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class ProviderPayload(Generic[T]):
+class ProviderPayload[T]:
     """A provider result coupled to record-level quality metadata."""
 
     data: T

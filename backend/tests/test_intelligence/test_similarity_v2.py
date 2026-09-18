@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.intelligence.ontology import EventCategory, EventOntologySchema
 from app.intelligence.regime import MarketRegime
@@ -8,7 +8,7 @@ from app.intelligence.similarity import HybridSimilarityEngine
 def _event(magnitude: float, duration: int) -> EventOntologySchema:
     return EventOntologySchema(
         title="Semiconductor disruption", description="test", source_url=f"https://example.test/{magnitude}",
-        published_at=datetime.now(timezone.utc), category=EventCategory.SUPPLY_CHAIN_DISRUPTION,
+        published_at=datetime.now(UTC), category=EventCategory.SUPPLY_CHAIN_DISRUPTION,
         severity_score=0.8, estimated_disruption_magnitude=magnitude, estimated_duration_days=duration,
         affected_sectors=["Semiconductors"], affected_countries=["Taiwan"],
     )

@@ -1,6 +1,6 @@
 """Traversal helpers and Cypher templates with point-in-time safeguards."""
 
-from collections import defaultdict, deque
+from collections import deque
 from datetime import datetime
 
 from app.graph.schema import CausalEdge, GraphCoverageSummary

@@ -1,10 +1,10 @@
 """Tests for the rate limiter utility."""
 
-import asyncio
 import time
+
 import pytest
 
-from app.utils.rate_limiter import RateLimiter, RateLimitConfig
+from app.utils.rate_limiter import RateLimitConfig, RateLimiter
 
 
 @pytest.mark.asyncio

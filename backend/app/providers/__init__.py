@@ -6,7 +6,7 @@ adapted below to avoid a disruptive ingestion rewrite.
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from app.ingestion.alphavantage import AlphaVantageClient
@@ -144,7 +144,7 @@ class SecEdgarProvider(CompanyDataProvider):
         data = await self.client.get_latest_filings(ticker)
         return ProviderPayload(
             data=data,
-            quality=_quality("sec_edgar", completeness=1.0, timestamp=datetime.now(timezone.utc)),
+            quality=_quality("sec_edgar", completeness=1.0, timestamp=datetime.now(UTC)),
         )
 
     async def close(self) -> None:

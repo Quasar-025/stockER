@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from app.utils.database import async_session_factory
 from app.ingestion.bootstrap import BootstrapService
+from app.utils.database import async_session_factory
 
 logging.basicConfig(level=logging.INFO)
 

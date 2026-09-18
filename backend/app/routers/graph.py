@@ -25,7 +25,7 @@ async def list_graph_entities():
         return {"entities": results, "count": len(results)}
     except Exception as e:
         logger.error(f"Neo4j query failed: {e}")
-        raise HTTPException(status_code=500, detail="Graph database unavailable")
+        raise HTTPException(status_code=500, detail="Graph database unavailable") from e
     finally:
         await client.close()
 
@@ -52,7 +52,7 @@ async def list_graph_edges(ticker: str | None = None):
         return {"edges": results, "count": len(results)}
     except Exception as e:
         logger.error(f"Neo4j query failed: {e}")
-        raise HTTPException(status_code=500, detail="Graph database unavailable")
+        raise HTTPException(status_code=500, detail="Graph database unavailable") from e
     finally:
         await client.close()
 
@@ -97,6 +97,6 @@ async def traverse_graph(ticker: str, max_depth: int = 3):
         }
     except Exception as e:
         logger.error(f"Neo4j query failed: {e}")
-        raise HTTPException(status_code=500, detail="Graph database unavailable")
+        raise HTTPException(status_code=500, detail="Graph database unavailable") from e
     finally:
         await client.close()

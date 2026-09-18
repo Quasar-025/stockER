@@ -3,7 +3,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.evaluation.baselines import BacktestCase, BaselinePrediction, _BaseBaseline, required_baselines
+from app.evaluation.baselines import (
+    BacktestCase,
+    BaselinePrediction,
+    _BaseBaseline,
+    required_baselines,
+)
 from app.evaluation.metrics import MetricSummary, PredictionRecord, metrics_by_depth
 from app.intelligence.regime import MarketRegime
 

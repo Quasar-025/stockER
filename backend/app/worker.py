@@ -1,7 +1,9 @@
 """Celery worker configuration."""
 
 import logging
+
 from celery import Celery
+from celery.schedules import crontab
 
 from app.config import settings
 
@@ -26,8 +28,6 @@ celery_app.conf.update(
     task_time_limit=3600,  # 1 hour max task time
 )
 
-# Optional: Celery beat schedule for recurring tasks
-from celery.schedules import crontab
 
 celery_app.conf.beat_schedule = {
     "fetch-sec-filings-every-15-min": {

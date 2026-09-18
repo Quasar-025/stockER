@@ -6,7 +6,7 @@
 import logging
 import math
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import text
@@ -14,11 +14,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ingestion.yahoo_finance import MARKET_BENCHMARK, YahooFinanceClient
 from app.intelligence.classifier import EventClassifier
-from app.intelligence.impact import MarketImpactEngine, ForecastResult
+from app.intelligence.impact import ForecastResult, MarketImpactEngine
 from app.intelligence.ontology import EventCategory, EventOntologySchema
 from app.intelligence.regime import MarketRegime, MarketRegimeDetector
 from app.intelligence.similarity import HybridSimilarityEngine, SimilarityBreakdown
-from app.llm.explainer import explain_forecast
 from app.llm.provider import LLMProviderFactory
 from app.vectors.store import QdrantEventStore
 
@@ -64,8 +63,8 @@ class ForecastPipeline:
             title=title,
             description=description,
             source_url="",
-            published_at=datetime.now(tz=timezone.utc),
-            event_date=datetime.now(tz=timezone.utc),
+            published_at=datetime.now(tz=UTC),
+            event_date=datetime.now(tz=UTC),
             category=category,
             severity_score=severity,
             affected_tickers=affected_tickers or [],
@@ -83,7 +82,7 @@ class ForecastPipeline:
         # Step 5: Compute forecasts for each ticker
         forecasts: list[dict[str, Any]] = []
         causal_paths: list[dict[str, Any]] = []
-        
+
         # Optionally fetch causal graph surrounding affected_tickers
         if self.neo4j_client and tickers:
             try:
@@ -212,7 +211,7 @@ class ForecastPipeline:
                         title=payload.get("text_preview", "")[:200],
                         description=payload.get("text_preview", ""),
                         source_url="",
-                        published_at=datetime.now(tz=timezone.utc),
+                        published_at=datetime.now(tz=UTC),
                         category=EventCategory(payload.get("category", "OTHER")),
                         severity_score=payload.get("severity_score", 0.5),
                         affected_tickers=payload.get("affected_tickers", []),
@@ -248,7 +247,7 @@ class ForecastPipeline:
                 title=match["title"],
                 description=match["title"],
                 source_url="",
-                published_at=datetime.now(tz=timezone.utc),
+                published_at=datetime.now(tz=UTC),
                 category=EventCategory(match["category"]),
                 severity_score=0.5,
             )
@@ -400,11 +399,9 @@ Provide:
     ) -> None:
         """Persist the forecast to the database."""
         try:
-            import json
-            import uuid
             # Ensure event exists to satisfy FK if needed, but since this is free-text,
             # we might just generate a dummy event_id or link it to a canonical event if one exists.
-            # For now, we will skip inserting into the 'forecasts' table because 
+            # For now, we will skip inserting into the 'forecasts' table because
             # the schema expects a strict event_id foreign key and one row per ticker.
             # We'll just log it instead of crashing the DB schema.
             logger.info(f"Forecast {forecast_id} generated successfully but DB storage is mocked for now.")

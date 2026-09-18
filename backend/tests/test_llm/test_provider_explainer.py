@@ -1,19 +1,20 @@
 """Tests for the LLM Provider and Explainer."""
 
-import pytest
 import uuid
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, patch
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock
 
-from app.llm.provider import OllamaProvider, OpenAIProvider, LLMProviderFactory
-from app.llm.explainer import (
-    build_explanation_prompt,
-    explain_forecast,
-    _fallback_explanation,
-    EXPLAINER_SYSTEM_PROMPT,
-)
+import pytest
+
 from app.intelligence.impact import ForecastResult
 from app.intelligence.regime import MarketRegime
+from app.llm.explainer import (
+    EXPLAINER_SYSTEM_PROMPT,
+    _fallback_explanation,
+    build_explanation_prompt,
+    explain_forecast,
+)
+from app.llm.provider import LLMProviderFactory, OllamaProvider, OpenAIProvider
 
 
 def _make_forecast(**overrides) -> ForecastResult:
@@ -34,7 +35,7 @@ def _make_forecast(**overrides) -> ForecastResult:
             }
         ],
         "causal_chain": ["Taiwan Earthquake", "TSMC Shutdown", "Apple Supply Shortage"],
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.now(UTC),
     }
     defaults.update(overrides)
     return ForecastResult(**defaults)

@@ -5,7 +5,7 @@ available for an illustrative forecast only when the caller permits temporal
 approximations, and never for rigorous point-in-time model scoring.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.graph.schema import (
     CHANNEL_FOR_RELATIONSHIP,
@@ -34,8 +34,8 @@ def _prior_edge(
         historical_coefficient=None, historical_observation_count=0,
         estimation_metadata=EstimationMetadata(sample_count=0, estimation_method=EstimationMethod.MANUAL_PRIOR, is_prior=True),
         typical_time_lag_days=lag, min_lag_days=max(0, lag - 2), max_lag_days=lag + 14,
-        relationship_created_at=datetime(2024, 1, 1, tzinfo=timezone.utc), relationship_verified_at=None,
-        source_date=datetime(2024, 1, 1, tzinfo=timezone.utc), temporal_approximation=True,
+        relationship_created_at=datetime(2024, 1, 1, tzinfo=UTC), relationship_verified_at=None,
+        source_date=datetime(2024, 1, 1, tzinfo=UTC), temporal_approximation=True,
         confidence=0.55, evidence_count=1, evidence_sources=[evidence],
         verification_status=VerificationStatus.APPROXIMATE,
     )

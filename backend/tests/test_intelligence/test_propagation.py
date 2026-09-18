@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.graph.historical_observations import CausalRelationshipObservation
 from app.graph.queries import InMemoryCausalGraph
@@ -17,7 +17,7 @@ from app.intelligence.regime import MarketRegime
 
 
 def _edge(relationship: RelationshipType) -> CausalEdge:
-    now = datetime.now(timezone.utc) - timedelta(days=1)
+    now = datetime.now(UTC) - timedelta(days=1)
     return CausalEdge(
         source_entity="TSM", target_entity="NVDA", relationship_type=relationship,
         channel_type=CHANNEL_FOR_RELATIONSHIP[relationship], strength=0.8, dependency_exposure=0.7,
@@ -30,7 +30,7 @@ def _edge(relationship: RelationshipType) -> CausalEdge:
 
 
 def _event() -> EventOntologySchema:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return EventOntologySchema(
         title="TSMC disruption", description="capacity disruption", source_url="https://example.test/event",
         published_at=now, event_date=now, category=EventCategory.SUPPLY_CHAIN_DISRUPTION,
@@ -40,7 +40,7 @@ def _event() -> EventOntologySchema:
 
 
 def _observations() -> list[CausalRelationshipObservation]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return [
         CausalRelationshipObservation(
             event_id=f"event-{index}", event_date=now - timedelta(days=200 + index), available_at=now - timedelta(days=100),

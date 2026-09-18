@@ -1,11 +1,10 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-from alembic import context
 
 from app.config import settings
 from app.models import Base
@@ -35,21 +34,21 @@ def include_object(object, name, type_, reflected, compare_to):
 def process_revision_directives(context, revision, directives):
     """Add TimescaleDB hypertable creation after table creation."""
     script = directives[0]
-    
+
     # We want to check if the 'ohlcv' table is being created in this migration
     has_ohlcv_creation = False
-    
+
     # Simple check - this would typically be more robust in a real app
     # but for bootstrap purposes we can just look at the table names in the upgrade ops
     for op in getattr(script.upgrade_ops, "ops", []):
         if getattr(op, "__class__", None).__name__ == "CreateTableOp":
             if getattr(op, "table_name", "") == "ohlcv":
                 has_ohlcv_creation = True
-                
+
     if has_ohlcv_creation:
         # Add hypertable creation after the table is created
         from alembic.operations import ops
-        
+
         # We need to manually add the raw SQL to create the hypertable
         hypertable_sql = ops.ExecuteSQLOp(
             "SELECT create_hypertable('ohlcv', 'time', if_not_exists => TRUE);"
@@ -75,7 +74,7 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     context.configure(
-        connection=connection, 
+        connection=connection,
         target_metadata=target_metadata,
         include_object=include_object,
         process_revision_directives=process_revision_directives,

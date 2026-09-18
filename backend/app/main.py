@@ -1,8 +1,8 @@
 """StockER FastAPI application entry point."""
 
-from contextlib import asynccontextmanager
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -97,7 +97,7 @@ def create_app() -> FastAPI:
         }
 
     # Register routers
-    from app.routers import health, events, forecast, stocks, graph
+    from app.routers import events, forecast, graph, health, stocks
 
     app.include_router(health.router)
     app.include_router(events.router)

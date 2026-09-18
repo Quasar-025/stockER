@@ -1,9 +1,8 @@
 """Tests for the Market Regime Detector."""
 
-import pytest
 import numpy as np
 
-from app.intelligence.regime import MarketRegimeDetector, MarketRegime
+from app.intelligence.regime import MarketRegime, MarketRegimeDetector
 
 
 class TestMarketRegimeDetector:

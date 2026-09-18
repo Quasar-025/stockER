@@ -6,8 +6,8 @@ intelligence layer has the inputs it needs.
 """
 
 import logging
-from datetime import date, datetime, timezone
-from typing import Sequence
+from collections.abc import Sequence
+from datetime import date
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

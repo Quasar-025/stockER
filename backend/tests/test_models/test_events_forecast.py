@@ -1,7 +1,7 @@
 """Tests for Event and Forecast models."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.models.events import EventObject
 from app.models.forecast import Forecast
@@ -10,8 +10,8 @@ from app.models.forecast import Forecast
 def test_event_object_creation():
     """Test that EventObject model can be instantiated."""
     event_id = uuid.uuid4()
-    now = datetime.now(timezone.utc)
-    
+    now = datetime.now(UTC)
+
     event = EventObject(
         id=event_id,
         title="Major earthquake hits Taiwan, disrupting semiconductor supply chains",
@@ -24,7 +24,7 @@ def test_event_object_creation():
         affected_sectors=["Semiconductors", "Consumer Electronics"],
         affected_countries=["Taiwan", "USA"],
     )
-    
+
     assert event.id == event_id
     assert event.category == "SUPPLY_CHAIN_DISRUPTION"
     assert "TSM" in event.affected_tickers
@@ -35,7 +35,7 @@ def test_forecast_creation():
     """Test that Forecast model can be instantiated."""
     forecast_id = uuid.uuid4()
     event_id = uuid.uuid4()
-    
+
     forecast = Forecast(
         id=forecast_id,
         event_id=event_id,
@@ -47,7 +47,7 @@ def test_forecast_creation():
         causal_chain=["Taiwan Earthquake", "TSMC Factory Shutdown", "Apple Supply Shortage"],
         market_regime="BULL_HIGH_VOLATILITY",
     )
-    
+
     assert forecast.ticker == "AAPL"
     assert forecast.predicted_impact == -0.045
     assert forecast.confidence_score == 0.72

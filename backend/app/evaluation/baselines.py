@@ -1,6 +1,6 @@
 """The five required baseline estimators for causal-cascade evaluation."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 
 from app.intelligence.distribution import EmpiricalImpactDistribution
