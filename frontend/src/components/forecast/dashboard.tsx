@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { ForecastResponse, ImpactForecast, SimilarEvent, CausalPath } from "@/lib/api";
 
