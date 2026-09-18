@@ -29,7 +29,7 @@ News / Data Feeds
 | Layer | Technology |
 |-------|-----------|
 | **Backend** | Python 3.12+ / FastAPI / PydanticAI / Celery |
-| **Frontend** | Next.js 15 / Tailwind v4 / shadcn/ui / TradingView Charts |
+| **Frontend** | Next.js 16 / Tailwind v4 / React Force Graph 2D |
 | **Intelligence** | FinBERT / HMM (hmmlearn) / scikit-learn |
 | **LLM** | Ollama (local) with pluggable cloud fallback |
 | **Databases** | PostgreSQL + TimescaleDB / Neo4j / Qdrant / Redis |
@@ -183,7 +183,7 @@ that estimate are reported separately.
 ```
 stockER/
 ├── backend/          # Python FastAPI — API + Intelligence Core
-├── frontend/         # Next.js 15 — Dashboard UI
+├── frontend/         # Next.js 16 — Dashboard UI
 ├── graph-seed/       # Neo4j initial data (companies, supply chains)
 ├── docker-compose.yml
 └── .env.example
