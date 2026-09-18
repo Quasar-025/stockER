@@ -1,7 +1,7 @@
 """Forecast router — generate new forecasts or retrieve existing ones."""
 
-from typing import Any
 import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel

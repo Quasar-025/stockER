@@ -1,8 +1,8 @@
 """Stocks router — list, retrieve, and trigger price refreshes."""
 
-from typing import Any
 import logging
 from datetime import UTC, date, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text

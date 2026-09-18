@@ -158,4 +158,4 @@ class YahooFinanceClient:
 
             self.__class__._name_cache = _fetch  # type: ignore[attr-defined]
 
-        return getattr(self.__class__, "_name_cache")(ticker)  # type: ignore
+        return self.__class__._name_cache(ticker)  # type: ignore

@@ -1,8 +1,8 @@
 """System health endpoint — checks database, Qdrant, Neo4j, Redis connectivity."""
 
-from typing import Any
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
